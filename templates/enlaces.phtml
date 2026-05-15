@@ -1,0 +1,420 @@
+<?php include 'header.phtml'; ?>
+<div class="row page-titles">
+	<div class="col-md-5 align-self-center">
+		<h3 class="text-themecolor"><i class="fa fa-users"></i> ENLACES</h3>
+	</div>
+</div>
+<div class="container-fluid">
+	<div class="card">
+		<div class="card-body">
+			<div class="table-responsive">
+				<table id="tbl-urls" class="table table-hover table-striped w-100 mw-100"></table>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="frm-url" class="modal fade" data-backdrop="static" data-keyboard="false" tabindex="-1">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content d-flex p-2">
+			<div class="modal-header">
+				<h3 class="modal-title">Crear URL encuesta</h3>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-group row">
+					<label class="col-form-label ml-0 font-weight-bold text-left" for="url-encuesta">Encuesta *</label>
+					<select id="url-encuesta" class="form-control">
+						<option value="0">Selecciona una encuesta</option>
+					</select>
+				</div>
+				<div class="form-group row">
+					<label class="col-form-label ml-0 font-weight-bold text-left" for="url-num_preguntas">No. Preguntas *</label>
+					<input type="text" id="url-num_preguntas" placeholder="N&uacute;mero de preguntas" class="form-control required">
+				</div>
+			</div>
+			<div class="modal-footer d-flex">
+				<div class="row mx-0 px-0 col-sm-12">
+					<div class="col-sm-12 mx-0 px-0">
+						<div class="form-group">
+							<div class="pull-right">
+								<button type="button" class="btn btn-inverse waves-effect waves-light m-r-20" data-dismiss="modal">Cancelar</button>
+								<button type="button" class="btn btn-success waves-effect waves-light" id="btnSaveUrl">Guardar</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="frm-email" class="modal fade" data-backdrop="static" data-keyboard="false" tabindex="-1">
+	<div class="modal-dialog modal-md">
+		<div class="modal-content d-flex p-2">
+			<div class="modal-header">
+				<h3 class="modal-title">Enviar enlace</h3>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-horizontal">
+					<div class="form-group">
+						<label for="email-email" class="col-md-6 col-form-label text-left">Destinatarios: </label>
+						<div class="col-md-12">
+							<textarea class="form-control" id="email-email" cols="30" rows="3" placeholder="Destinatarios. (Separados por comas)"></textarea>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="email-asunto" class="col-md-6 col-form-label text-left">Asunto: </label>
+						<div class="col-md-12">
+							<input type="text" class="form-control" id="email-asunto" placeholder="Asunto">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-md-6 col-form-label text-left" for="email-mensaje">Mensaje Adicional: </label>
+						<div class="col-md-12">
+							<textarea class="form-control" id="email-mensaje" cols="30" rows="5" placeholder="Mensaje Adicional"></textarea>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer d-flex justify-content-end">
+				<button type="button" class="btn btn-inverse waves-effect waves-light m-r-20" data-dismiss="modal">Cancelar</button>
+				<button type="button" class="btn btn-success waves-effect waves-light" id="btnSendEmail">Enviar</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="frm-whatsapp" class="modal fade" data-backdrop="static" data-keyboard="false" tabindex="-1">
+	<div class="modal-dialog modal-md">
+		<div class="modal-content d-flex p-2">
+			<div class="modal-header">
+				<h3 class="modal-title"><i class="fa fa-whatsapp"></i> Enviar enlace por WhatsApp</h3>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p class="text-muted small">Pega los números separados por coma o salto de línea. Solo el número a 10 dígitos, sin código de país (se agrega +52 automáticamente).</p>
+				<div class="form-group">
+					<label for="wa-telefonos" class="font-weight-bold">Números de teléfono:</label>
+					<textarea class="form-control" id="wa-telefonos" rows="8" placeholder="7721234567&#10;7729876543&#10;7721111111"></textarea>
+					<small class="form-text text-muted"><span id="wa-count">0</span> números detectados</small>
+				</div>
+				<div id="wa-resultado" class="alert d-none"></div>
+			</div>
+			<div class="modal-footer d-flex justify-content-between align-items-center">
+				<button type="button" class="btn btn-inverse waves-effect waves-light m-r-20" data-dismiss="modal">Cancelar</button>
+				<button type="button" class="btn btn-success waves-effect waves-light" id="btnSendWhatsApp">
+					<i class="fa fa-whatsapp"></i> Enviar
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+<?php include 'footer.phtml'; ?>
+<script>
+	$(function() {
+		$apiUrl = '<?= URL_API ?>';
+
+		$('#url-encuesta').select2({ width: '100%', placeholder: 'Seleccione una encuesta', theme: 'bootstrap4' })
+		$('#url-num_preguntas').inputmask({ alias: "numeric", groupSeparator: ',', digits: 0, digitsOptional: false });
+
+		getUrls(); function getUrls() { createTable('tbl-urls', true); }
+
+		getEncuestas();
+		function getEncuestas() { blockPage();
+			$.get($apiUrl+'encuesta/getAll/0/0/_/1', function(encuestas) {
+				$.each(encuestas.result, function(index, encuesta) {
+					$('#url-encuesta').append('<option value="'+encuesta.ID_encuesta+'">'+encuesta.nombre+'</option>');
+				});
+
+				$.unblockUI();
+			}, 'json');
+		}
+
+		$('tbody').on('click', '.btnAlta', function(event) { event.preventDefault(); blockPage();
+			trp = $(this).parents('tr');
+			id = trp.data('id');
+			trInfo = getTrElement('tbl-urls', trp);
+			$.get($apiUrl+'encuesta/get/'+trInfo.find('.encuesta').data('id'), function(encuesta) {
+				if(encuesta.result.status==1 && encuesta.preguntas.length>=parseInt(trInfo.find('.preguntas').text())) {
+					swal({ title:"Activar enlace", text:"¿Desea activar la enlace?", type:"warning", html:true, showCancelButton:true, cancelButtonText:"Cancelar", confirmButtonText:"Si, activar", closeOnConfirm:true }, function(user_response) {
+						if(user_response) {
+							$.ajax({ url: $apiUrl+'url/edit/'+id, type: 'POST', dataType: 'json', data: {status: 1} }).done(function(resp) {
+								if(resp.response) {
+									$('#tbl-urls').DataTable().ajax.reload(function(response) { 
+										swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+			
+										$.unblockUI(); 
+									}, false);
+								} else { swal({ type: "warning", title: "Oops!", text: resp.message, timer: 4000 }, function() { $.unblockUI(); }); }
+							});
+						} else { $.unblockUI(); }
+					});
+				} 
+				else if(encuesta.preguntas.length < parseInt(trInfo.find('.preguntas').text())) { swal({ type: "warning", title: "Oops!", text: 'La encuesta no tiene suficientes preguntas, necesitas '+parseInt(trInfo.find('.preguntas').text()), timer: 4000 }, function() { $.unblockUI(); }); } 
+				else { swal({ type: "warning", title: "Oops!", text: 'La encuesta esta inactiva o fue eliminada', timer: 4000 }, function() { $.unblockUI(); }); }
+			}, 'json');
+		});
+
+		$('tbody').on('click', '.btnBaja', function(event) { event.preventDefault();
+			trp = $(this).parents('tr');
+			id = trp.data('id');
+			swal({ title:"Inactivar enlace", text:"¿Desea inactivar la enlace?", type:"warning", html:true, showCancelButton:true, cancelButtonText:"Cancelar", confirmButtonText:"Si, inactivar", closeOnConfirm:true }, function() {
+				blockPage();
+				$.ajax({ url: $apiUrl+'url/edit/'+id, type: 'POST', dataType: 'json', data: {status: 2} }).done(function(resp) {
+					if(resp.response) {
+						$('#tbl-urls').DataTable().ajax.reload(function(response) { 
+							swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+
+							$.unblockUI(); 
+						}, false);
+					} else { swal({ type: "warning", title: "Oops!", text: resp.message, timer: 4000 }, function() { $.unblockUI(); }); }
+				});
+			});
+		});
+
+		$('#btnSaveUrl').click(function(e) { e.preventDefault();
+			data = { ID_encuesta: parseInt($('#url-encuesta').val()), num_preguntas: $.isNumeric($('#url-num_preguntas').val())? $('#url-num_preguntas').val(): 0, 'fecha': moment().format('YYYY-MM-DDTHH:mm:ss'), 'status': 2 };
+
+			$errLabel = $('<div class="invalid-tooltip"></div>');
+			if(data.ID_encuesta == 0) { $errLabel.html('Debe seleccionar la encuesta'); $('#url-encuesta').after($errLabel); $errLabel.show(); }
+			else if(data.num_preguntas == 0) { $errLabel.html('Debe ingresar el número de preguntas'); $('#url-num_preguntas').focus().after($errLabel); $errLabel.show(); }
+			else {
+				blockPage();
+				$.post($apiUrl+'url/add/', data, function(url) {
+					if(url.response) {
+						data = url.data;
+						cleanTable('tbl-urls'); createTable('tbl-urls', true);
+
+						$('#frm-url').modal('hide');
+						swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+					} else { swal({ type:"error", title:"Oops!", text:encuesta.message, timer:4000 }); }
+
+					$.unblockUI();
+				}, 'json');
+			}
+
+			setTimeout(() => { $('.invalid-tooltip').remove(); }, 3000);
+		});
+
+		$('#frm-url').on('shown.bs.modal', function () { $('.invalid-name').remove(); });
+		$('#frm-url').on('hidden.bs.modal', function () { $(this).find('#url-encuesta, #url-num_preguntas').val(0); });
+
+		$('#tbl-urls').on('click', '.btnDelUrl', function(e) { e.preventDefault();
+			tr = $(this).parents('tr');
+			trInfo = getTrElement('tbl-urls', tr);
+
+			swal({ title:"Eliminar enlace", text:"No podrá restaurar el enlace <strong>"+trInfo.find('.url').text()+"</strong>", type:"warning", html:true, showCancelButton:true, cancelButtonText:"Cancelar", confirmButtonColor:"#DD6B55", confirmButtonText:"Si, eliminar", closeOnConfirm:false  }, function() {
+				blockPage();
+				$.ajax({ url:$apiUrl+'url/del/'+tr.attr('data-id'), type:'POST', dataType:'json', success:function(resp) {
+					if(resp.response) {
+						cleanTable('tbl-urls'); tr.remove(); createTable('tbl-urls', false);
+						swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+					} else { swal({ type:"warning", title:"Oops!", text:resp.message, timer:4000 }); }
+
+					$.unblockUI();
+				}});
+			});
+		});
+
+		dataEmail = null;
+		$(document).on('click', '.btnEmail', function(e) {
+			e.preventDefault();
+			tr = $(this).parents('tr');
+			trInfo = getTrElement('tbl-urls', tr);
+			dataEmail = { enlace: trInfo.find('.url a').first().attr('href'), encuesta: trInfo.find('.encuesta').text() };
+
+			$('#frm-email').modal('show');
+		});
+
+		$('#frm-email').on('hidden.bs.modal', function() {
+			$('#frm-email').find('input, textarea').val('');
+			dataEmail = null;
+		});
+
+		$('#btnSendEmail').click(function(e) { blockPage();
+			e.preventDefault();
+			dataEmail.emailList = $('#email-email').val();
+			dataEmail.asunto = $('#email-asunto').val();
+			dataEmail.mensaje = $('#email-mensaje').val();
+
+			$errLabel = $('<div class="invalid-tooltip"></div>');
+			if(dataEmail.emailList == '') { $errLabel.html('Debe proporcionar los destinatarios'); $('#email-email').after($errLabel).focus(); $errLabel.show(); }
+			else if(dataEmail.asunto == '') { blockPage();
+				swal({ title:"Enviar Correo", text:"El correo se enviará sin asunto. ¿Desea continuar?", type:"warning", html:true, showCancelButton:true, cancelButtonText:"Cancelar", confirmButtonText:"Si, continuar", closeOnConfirm:true }, function(user_response) {
+					if(user_response) {
+						sendEmail();
+					} else { $.unblockUI(); }
+				});
+			} else { blockPage(); sendEmail(); }
+
+			setTimeout(() => { $('.invalid-tooltip').remove(); }, 3000);
+		});
+
+		function sendEmail() { blockPage();
+			$.post($apiUrl+'url/sendEmail/', dataEmail, function(mail) { }, 'json');
+			setTimeout(() => { 
+				$('#frm-email').modal('hide');
+
+				swal({ type:"success", title:"¡Listo!", text:"Se envió el correo exitosamente.", timer:4000 });
+				$.unblockUI(); 
+			}, 3000);
+		}
+
+		$(document).on('click', '.btnCopy', function(e) {
+			e.preventDefault();
+			text = $(this).attr('data-url');
+
+			navigator.clipboard.writeText(text);
+			swal({ type:"success", title:"¡Listo!", text:"Enlace copiado al portapapeles.", timer:2500 });
+		});
+
+		dataWhatsApp = null;
+		$(document).on('click', '.btnWhatsApp', function(e) {
+			e.preventDefault();
+			tr = $(this).parents('tr');
+			trInfo = getTrElement('tbl-urls', tr);
+			dataWhatsApp = { url: $(this).attr('data-url') };
+
+			$('#wa-telefonos').val('');
+			$('#wa-count').text('0');
+			$('#wa-resultado').addClass('d-none').removeClass('alert-success alert-warning').html('');
+			$('#frm-whatsapp').modal('show');
+		});
+
+		$('#wa-telefonos').on('input', function() {
+			// Eliminar cualquier caracter que no sea dígito, espacio, coma, punto y coma o salto de línea
+			var sanitized = $(this).val().replace(/[^\d\s,;\n]/g, '');
+			if(sanitized !== $(this).val()) { $(this).val(sanitized); }
+
+			var numeros = sanitized.split(/[\s,;]+/).filter(function(n) { return n.trim().length > 0; });
+			$('#wa-count').text(numeros.length);
+		});
+
+		$('#frm-whatsapp').on('hidden.bs.modal', function() {
+			$('#wa-telefonos').val('');
+			$('#wa-count').text('0');
+			$('#wa-resultado').addClass('d-none').html('');
+			dataWhatsApp = null;
+		});
+
+		$('#btnSendWhatsApp').click(function(e) {
+			e.preventDefault();
+			var telefonos = $('#wa-telefonos').val().trim();
+			if(!telefonos) {
+				$('#wa-resultado').removeClass('d-none alert-success').addClass('alert alert-warning').html('Debe ingresar al menos un número.');
+				setTimeout(() => { $('.invalid-tooltip').remove(); }, 3000);
+				return;
+			}
+
+			blockPage();
+			$('#btnSendWhatsApp').prop('disabled', true);
+
+			$.post(`${$apiUrl}encuesta/send/`, { url: dataWhatsApp.url, telefonos: telefonos }, function(resp) {
+				$('#btnSendWhatsApp').prop('disabled', false);
+				$.unblockUI();
+
+				var cls = resp.fallidos > 0 ? 'alert-warning' : 'alert-success';
+				var msg = resp.message;
+				if(resp.fallidos > 0) {
+					msg += '<br><small>Fallidos: ' + resp.errors.join(', ') + '</small>';
+				}
+				$('#wa-resultado').removeClass('d-none alert-success alert-warning').addClass('alert ' + cls).html(msg);
+			}, 'json').fail(function() {
+				$('#btnSendWhatsApp').prop('disabled', false);
+				$.unblockUI();
+				$('#wa-resultado').removeClass('d-none alert-success').addClass('alert alert-warning').html('Error al conectar con el servidor.');
+			});
+		});
+
+		function clearData() {
+			$('.invalid-tooltip').remove();
+			$('#frm-url input, #frm-url select').val(0).trigger('change')
+		}
+
+		var temporal = null;
+		function evaluar(tbl, time) {
+			setTimeout(() => {
+				if(time == temporal) {
+					$("#"+tbl+"_filter label input").val($.trim($('#'+tbl+'-bus').val())).trigger('keyup');
+				}
+			}, 1000);
+		}
+
+		/* <a href="#" class="btn btn-sm btn-link btnEmail" toggle="tooltip" title="Enviar correo">
+			<span class="fa fa-send-o text-secondary"></span>
+		</a> */
+		function createTable(tbl, paging=true) { blockPage();
+			var table = $('#'+tbl).dataTable( {
+				scrollX: false,
+				paging: paging,
+				pagingType: "full_numbers",
+				dom: 'Rl<"#toolbar-'+tbl+'">frtip',
+				columnDefs: [
+					{'data': 'ID_url', 'title': '<small class="font-weight-bold">Folio</small>', 'orderable': true, 'targets': [0], 'className': 'text-center'},
+					{'data': 'fecha', 'title': '<small class="font-weight-bold">Creación</small>', 'orderable': true, 'targets': [1], 'className': 'text-center'},
+					{'data': 'nombre', 'title': '<small class="font-weight-bold">Encuesta</small>', 'orderable': true, 'targets': [2], 'className': 'text-left'},
+					{'data': 'shortUrl', 'title': '<small class="font-weight-bold">Url</small>', 'orderable': true, 'targets': [3], 'className': 'text-left', 
+								'render': function ( data, type, row ) { 
+									return `<small class="url">
+												<a href="${data}" target="_BLANK"> ${(type === 'display' && data.length > 15 ? data.substr( 0, 15 ) +'…' : data)}</a>
+												<div class="pull-right">
+													<a href="#" class="btn btn-sm btn-link btnCopy" data-url="${data}" toggle="tooltip" title="Copiar enlace">
+														<span class="fa fa-copy"></span>
+													</a>
+													<a href="#" class="btn btn-sm btn-link btnWhatsApp" data-url="${data}" toggle="tooltip" title="Enviar WhatsApp">
+														<span class="fa fa-whatsapp"></span>
+													</a>
+												</div>
+											</small>`; 
+								} 
+		},
+					{'data': 'num_preguntas', 'title': '<small class="font-weight-bold">No. Preg.</small>', 'orderable': true, 'targets': [4], 'className': 'text-center'},
+					{'data': 'num_intentos', 'title': '<small class="font-weight-bold">No. Resp.</small>', 'orderable': true, 'targets': [5], 'className': 'text-center'},
+					{'data': 'status', 'title': '<small class="font-weight-bold">Estatus</small>', 'orderable': true, 'targets': [6], 'className': 'text center'},
+					{'data': 'acciones', 'title': '', 'orderable': false, 'targets': [7], 'className': 'text-right'},
+				],
+				scrollCollapse: true,
+				order: [[0,'desc']],
+				processing: true,
+				serverSide: true,
+				ajax: {
+					url: $apiUrl+'url/getAllDataTables/0/0/_',
+					type: 'GET',
+				},
+				createdRow: function(row, data, dataIndex) {
+					$(row).attr('data-id', data.data_id);
+				},
+				drawCallback: function(settings) {
+					$.unblockUI();
+				}
+			});
+
+			$('#toolbar-'+tbl+'').addClass('form-inline pull-right').html('');
+
+			searchContainer = $('<div class="input-group input-group-sm p-r-10"></div>').appendTo('#toolbar-'+tbl);
+			searchContainer.append('<div class="input-group-prepend"><span class="input-group-text"><i class="fa fa-search"></i></span></div>')
+			search = $('<input type="text" id="'+tbl+'-bus" placeholder="Buscar por nombre o correo" class="form-control form-control-sm">').appendTo(searchContainer);
+			search.keyup(function(e) { temporal = moment().format('x')+"-"+Math.random(); evaluar(tbl, temporal); });
+			search.on("search", function(evt) { $("#"+tbl+"_filter label input").val(undefined).trigger('keyup'); });
+
+			buttonsContainer = $('<div class="buttons"></div>').appendTo('#toolbar-'+tbl);
+			buttonPDF = $('<button type="button" class="btn ml-2 btn-sm btn-inline-block" title="Exportar a PDF"><span class="mdi mdi-file-pdf-box fa-2x" style="color: red;"></span></button>').appendTo(buttonsContainer);
+			buttonPDF.click(function(e) { toSearch = search.val().length>0? search.val(): '_'; window.open($apiUrl+'url/export/pdf/'+toSearch); });
+			buttonExcel = $('<button type="button" class="btn btn-sm btn-inline-block" title="Exportar a Excel"><span class="mdi mdi-file-excel-box fa-2x" style="color: green;"></span></button>').appendTo(buttonsContainer);
+			buttonExcel.click(function(e) { toSearch = search.val().length>0? search.val(): '_'; window.open($apiUrl+'url/export/xlsx/'+toSearch); });
+			buttonAdd = $('<button type="button" class="btn btn-sm btn-inline-block" title="Agregar" id="btnAdd"><span class="mdi mdi-library-plus fa-2x text-success"></span></button>').appendTo(buttonsContainer);
+			buttonAdd.click(function(e) { e.preventDefault(); clearData(); $('#frm-url').modal('show'); });
+			
+			$('[data-toggle="tooltip"]').tooltip();
+
+			$('#'+tbl).parents('.table-responsive').css('overflow', 'visible');
+			$("#"+tbl+"_filter label").hide();
+		}
+	});
+</script>

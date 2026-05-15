@@ -1,0 +1,106 @@
+<?php
+	include './core/defines.php';
+	require_once('../vendor/autoload.php');
+	require_once('../vendor/tecnickcom/tcpdf/tcpdf_import.php');
+
+	class MYPDF extends TCPDF {
+		public function Header() {}
+		public function Footer() {
+			$this->SetY(-15);
+			$this->SetFillColor(255, 255, 255);
+			$this->SetFont(PDF_FONT_NAME_MAIN, '', 11);
+			$this->Cell(0, 3, SITE_NAME, 0, 0, 'L');
+			$this->SetX(10);
+			$this->Cell(0, 3, 'Página ' . $this->PageNo() . ' de ' . $this->getAliasNbPages(), 0, 0, 'R');
+		}
+	}
+
+	$nombreEncuesta = isset($encuesta->nombre) ? $encuesta->nombre : 'Encuesta';
+	$totalFilas     = count($filas);
+
+	$pdf = new MYPDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+	$pdf->SetMargins(10, 20, 10, 20);
+	$pdf->SetAutoPageBreak(true, 20);
+	$pdf->SetCreator(SITE_NAME);
+	$pdf->SetAuthor(SITE_NAME);
+	$pdf->SetTitle('Respuestas – ' . $nombreEncuesta);
+	$pdf->SetFillColor(255, 255, 255);
+	$pdf->SetTextColor(0, 0, 0);
+	$pdf->AddPage();
+
+	// Determine column widths
+	$pageWidth   = $pdf->getPageWidth() - 20; // margins
+	$fixedWidth  = 10 + 35; // # + fecha
+	$questionCols = count($preguntas);
+	$qWidth      = $questionCols > 0 ? round(($pageWidth - $fixedWidth) / $questionCols, 1) : 35;
+	if ($qWidth < 20) { $qWidth = 20; }
+
+	$cols = [['title' => '# INVITADO', 'width' => 18, 'align' => 'C'], ['title' => 'Fecha', 'width' => 28, 'align' => 'C']];
+	foreach ($preguntas as $p) {
+		$cols[] = ['title' => $p->pregunta, 'width' => $qWidth, 'align' => 'L'];
+	}
+
+	$lineHeight  = 5;
+	$tableBorder = 1;
+
+	$drawHeader = function() use ($pdf, $cols, $tableBorder) {
+		$pdf->SetFillColor(21, 101, 192);
+		$pdf->SetTextColor(255, 255, 255);
+		$pdf->SetFont(PDF_FONT_NAME_MAIN, 'B', 8);
+		foreach ($cols as $col) {
+			$pdf->Cell($col['width'], 9, $col['title'], $tableBorder, 0, 'C', 1);
+		}
+		$pdf->Ln();
+		$pdf->SetTextColor(0, 0, 0);
+	};
+
+	// Title block
+	$pdf->SetFillColor(245, 245, 245);
+	$pdf->SetFont(PDF_FONT_NAME_MAIN, 'B', 13);
+	$pdf->Cell(0, 10, 'RESPUESTAS DE ENCUESTA', 0, 1, 'C', 1);
+	$pdf->SetFont(PDF_FONT_NAME_MAIN, 'B', 10);
+	$pdf->Cell(0, 7, mb_strtoupper($nombreEncuesta), 0, 1, 'C', 0);
+	$pdf->SetFont(PDF_FONT_NAME_MAIN, '', 9);
+
+	$pdf->Cell(0, 6, 'Total respuestas: ' . $totalFilas . '     Generado: ' . date('d/m/Y H:i:s'), 0, 1, 'C', 0);
+	$pdf->Ln(3);
+
+	$drawHeader();
+
+	$counter = 0;
+	foreach ($filas as $fila) {
+		$counter++;
+
+		$rowData   = [$fila['num'], date('d/m/Y H:i', strtotime($fila['inicio']))];
+		foreach ($preguntas as $p) {
+			$rowData[] = isset($fila['p_' . $p->ID_pregunta]) ? (string)$fila['p_' . $p->ID_pregunta] : '';
+		}
+
+		$maxLines = 1;
+		foreach ($rowData as $idx => $value) {
+			$lines = $pdf->getNumLines($value, $cols[$idx]['width']);
+			if ($lines > $maxLines) { $maxLines = $lines; }
+		}
+		$rowHeight = $maxLines * $lineHeight;
+
+		$breakLimit = $pdf->getPageHeight() - $pdf->getBreakMargin();
+		if (($pdf->GetY() + $rowHeight) > $breakLimit) {
+			$pdf->AddPage();
+			$drawHeader();
+		}
+
+		$pdf->SetFillColor($counter % 2 === 0 ? 255 : 255, $counter % 2 === 0 ? 255 : 255, $counter % 2 === 0 ? 2255 : 255);
+		$pdf->SetFont(PDF_FONT_NAME_MAIN, '', 8);
+
+		$startX = $pdf->GetX();
+		$startY = $pdf->GetY();
+		foreach ($rowData as $idx => $value) {
+			$pdf->MultiCell($cols[$idx]['width'], $rowHeight, $value, $tableBorder, $cols[$idx]['align'], 1, 0, '', '', true, 0, false, true, $rowHeight, 'M');
+		}
+		$pdf->SetXY($startX, $startY + $rowHeight);
+	}
+
+	$filename = 'Respuestas_' . preg_replace('/[^A-Za-z0-9_]/', '_', $nombreEncuesta) . '_' . date('YmdHis') . '.pdf';
+	$pdf->Output($filename, 'D');
+	exit();
+?>

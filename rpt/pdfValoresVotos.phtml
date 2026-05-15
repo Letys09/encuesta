@@ -1,0 +1,101 @@
+<?php
+	include './core/defines.php';
+	require_once('../vendor/autoload.php');
+	require_once('../vendor/tecnickcom/tcpdf/tcpdf_import.php');
+
+	$valores = isset($valores) && is_array($valores) ? $valores : [];
+	$total_votos = isset($total_votos) ? (int)$total_votos : 0;
+	$desde = isset($desde) ? (string)$desde : '';
+	$hasta = isset($hasta) ? (string)$hasta : '';
+
+	class MYPDF extends TCPDF {
+		public function Header() {}
+		public function Footer() {
+			$this->SetY(-15);
+			$this->SetFont(PDF_FONT_NAME_MAIN, '', 10);
+			$this->Cell(0, 3, SITE_NAME, 0, 0, 'L');
+			$this->Cell(0, 3, 'Página '.$this->PageNo().' de '.$this->getAliasNbPages(), 0, 0, 'R');
+		}
+	}
+
+	$pdf = new MYPDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+	$pdf->SetMargins(10, 20, 10, 20);
+	$pdf->SetAutoPageBreak(true, 20);
+	$pdf->SetCreator(SITE_NAME);
+	$pdf->SetAuthor(SITE_NAME);
+	$pdf->SetTitle('Reporte de votos por valor QR');
+	$pdf->AddPage();
+
+	$pdf->SetFillColor(245, 245, 245);
+	$pdf->SetFont(PDF_FONT_NAME_MAIN, 'B', 13);
+	$pdf->Cell(0, 10, 'REPORTE DE VOTOS POR VALOR QR', 0, 1, 'C', 1);
+	$pdf->SetFont(PDF_FONT_NAME_MAIN, '', 9);
+	$pdf->Cell(0, 6, 'Generado: '.date('d/m/Y H:i:s'), 0, 1, 'C');
+	$pdf->Ln(2);
+
+	$cols = [
+		['title' => 'Codigo', 'width' => 20, 'align' => 'C'],
+		['title' => 'Valor', 'width' => 55, 'align' => 'L'],
+		['title' => 'Votos', 'width' => 18, 'align' => 'C'],
+		['title' => 'Invitados', 'width' => 184, 'align' => 'L'],
+	];
+
+	$pdf->SetFillColor(21, 101, 192);
+	$pdf->SetTextColor(255, 255, 255);
+	$pdf->SetFont(PDF_FONT_NAME_MAIN, 'B', 9);
+	foreach($cols as $col) {
+		$pdf->Cell($col['width'], 8, $col['title'], 1, 0, 'C', 1);
+	}
+	$pdf->Ln();
+
+	$pdf->SetTextColor(0, 0, 0);
+	$pdf->SetFont(PDF_FONT_NAME_MAIN, '', 8);
+	$lineHeight = 5;
+	$counter = 0;
+
+	foreach($valores as $v) {
+		$counter++;
+		$row = [
+			(string)$v->codigo,
+			(string)$v->valor,
+			(string)$v->votos,
+			(string)$v->invitados,
+		];
+
+		$maxLines = 1;
+		foreach($row as $idx => $value) {
+			$lines = $pdf->getNumLines($value, $cols[$idx]['width']);
+			if($lines > $maxLines) { $maxLines = $lines; }
+		}
+		$rowHeight = $maxLines * $lineHeight;
+
+		$breakLimit = $pdf->getPageHeight() - $pdf->getBreakMargin();
+		if(($pdf->GetY() + $rowHeight) > $breakLimit) {
+			$pdf->AddPage();
+			$pdf->SetFillColor(21, 101, 192);
+			$pdf->SetTextColor(255, 255, 255);
+			$pdf->SetFont(PDF_FONT_NAME_MAIN, 'B', 9);
+			foreach($cols as $col) {
+				$pdf->Cell($col['width'], 8, $col['title'], 1, 0, 'C', 1);
+			}
+			$pdf->Ln();
+			$pdf->SetTextColor(0, 0, 0);
+			$pdf->SetFont(PDF_FONT_NAME_MAIN, '', 8);
+		}
+
+		$pdf->SetFillColor($counter % 2 === 0 ? 245 : 255, $counter % 2 === 0 ? 250 : 255, $counter % 2 === 0 ? 255 : 255);
+		$startX = $pdf->GetX();
+		$startY = $pdf->GetY();
+		foreach($row as $idx => $value) {
+			$pdf->MultiCell($cols[$idx]['width'], $rowHeight, $value, 1, $cols[$idx]['align'], 1, 0, '', '', true, 0, false, true, $rowHeight, 'M');
+		}
+		$pdf->SetXY($startX, $startY + $rowHeight);
+	}
+
+	$pdf->Ln(2);
+	$pdf->SetFont(PDF_FONT_NAME_MAIN, 'B', 10);
+	$pdf->Cell(0, 7, 'Total votos: '.(int)$total_votos, 0, 1, 'R');
+
+	$pdf->Output('ValoresVotos_'.date('YmdHis').'.pdf', 'D');
+	exit();
+?>

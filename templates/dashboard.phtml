@@ -1,0 +1,194 @@
+<?php include 'header.phtml'; ?>
+<?php if( $_SESSION['diferencia'] >= 60 ) : ?>
+	<?php include 'footer.phtml'; ?>
+<?php else : ?>
+	<div class="row page-titles">
+		<div class="col-md-5 align-self-center">
+			<h3 class="text-themecolor"><i class="mdi mdi-chart-bar"></i> Dashboard</h3>
+		</div>
+	</div>
+	<div class="container-fluid">
+		<!-- KPI Cards -->
+		<div class="row">
+			<div class="col-md-3 col-sm-6">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex flex-row">
+							<div class="round round-lg align-self-center round-info mr-3"><i class="mdi mdi-clipboard-text fa-2x"></i></div>
+							<div class="align-self-center">
+								<h3 class="mb-0 font-weight-bold" id="kpi-encuestas-activas">—</h3>
+								<small class="text-muted">Encuestas activas</small>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3 col-sm-6">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex flex-row">
+							<div class="round round-lg align-self-center round-success mr-3"><i class="mdi mdi-help-circle fa-2x"></i></div>
+							<div class="align-self-center">
+								<h3 class="mb-0 font-weight-bold" id="kpi-total-preguntas">—</h3>
+								<small class="text-muted">Preguntas activas</small>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3 col-sm-6">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex flex-row">
+							<div class="round round-lg align-self-center round-warning mr-3"><i class="mdi mdi-account-multiple fa-2x"></i></div>
+							<div class="align-self-center">
+								<h3 class="mb-0 font-weight-bold" id="kpi-total-intentos">—</h3>
+								<small class="text-muted">Respuestas recibidas</small>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-3 col-sm-6">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex flex-row">
+							<div class="round round-lg align-self-center round-danger mr-3"><i class="mdi mdi-timer fa-2x"></i></div>
+							<div class="align-self-center">
+								<h3 class="mb-0 font-weight-bold" id="kpi-tiempo-promedio">—</h3>
+								<small class="text-muted">Minutos promedio</small>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Charts -->
+		<div class="row">
+			<div class="col-md-8">
+				<div class="card">
+					<div class="card-body">
+						<h4 class="card-title">Respuestas por mes <small class="text-muted">(últimos 6 meses)</small></h4>
+						<canvas id="chart-intentos-mes" height="100"></canvas>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="card">
+					<div class="card-body">
+						<h4 class="card-title">Tipos de pregunta</h4>
+						<canvas id="chart-tipos" height="200"></canvas>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Top surveys -->
+		<div class="row">
+			<div class="col-12">
+				<div class="card">
+					<div class="card-body">
+						<h4 class="card-title">Top 5 encuestas con más respuestas</h4>
+						<div class="table-responsive">
+							<table class="table table-hover table-striped">
+								<thead>
+									<tr>
+										<th class="text-center text-nowrap">Folio</th>
+										<th class="text-left">Nombre</th>
+										<th class="text-center text-nowrap">Respuestas</th>
+									</tr>
+								</thead>
+								<tbody id="tbody-top-encuestas"></tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<?php include 'footer.phtml'; ?>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+	<script>
+		$(function() {
+			$apiUrl = '<?= URL_API ?>';
+
+			blockPage();
+			$.get($apiUrl + 'reporte/dashboard', function(data) {
+				$.unblockUI();
+				if (!data.response) {
+					swal({ type: 'warning', title: 'Oops!', text: data.message, timer: 4000 });
+					return;
+				}
+
+				var s = data.result.stats;
+				$('#kpi-encuestas-activas').text(s.encuestas_activas);
+				$('#kpi-total-preguntas').text(s.total_preguntas);
+				$('#kpi-total-intentos').text(s.total_intentos);
+				$('#kpi-tiempo-promedio').text(s.tiempo_promedio_min + ' min');
+
+				// Chart: intentos por mes
+				var meses   = data.result.intentos_mes.map(function(m) { return m.etiqueta; });
+				var totales = data.result.intentos_mes.map(function(m) { return parseInt(m.total); });
+				new Chart(document.getElementById('chart-intentos-mes'), {
+					type: 'bar',
+					data: {
+						labels: meses,
+						datasets: [{
+							label: 'Respuestas',
+							data: totales,
+							backgroundColor: 'rgba(54, 162, 235, 0.7)',
+							borderColor: 'rgba(54, 162, 235, 1)',
+							borderWidth: 1
+						}]
+					},
+					options: {
+						responsive: true,
+						plugins: { legend: { display: false } },
+						scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+					}
+				});
+
+				// Chart: tipos de pregunta
+				var tiposLabels  = data.result.distrib_tipos.map(function(t) { return t.tipo_label; });
+				var tiposTotales = data.result.distrib_tipos.map(function(t) { return parseInt(t.total); });
+				new Chart(document.getElementById('chart-tipos'), {
+					type: 'doughnut',
+					data: {
+						labels: tiposLabels,
+						datasets: [{
+							data: tiposTotales,
+							backgroundColor: [
+								'rgba(255, 99, 132, 0.7)',
+								'rgba(54, 162, 235, 0.7)',
+								'rgba(255, 205, 86, 0.7)'
+							],
+							borderWidth: 1
+						}]
+					},
+					options: {
+						responsive: true,
+						plugins: { legend: { position: 'bottom' } }
+					}
+				});
+
+				// Top encuestas table
+				var tbody = $('#tbody-top-encuestas');
+				tbody.empty();
+				if (data.result.top_encuestas.length === 0) {
+					tbody.append('<tr><td colspan="3" class="text-center text-muted">Sin datos aún</td></tr>');
+				} else {
+					$.each(data.result.top_encuestas, function(i, e) {
+						var id    = String(e.ID_encuesta);
+						var folio = 'E-' + (id.length < 3 ? id.padStart(3, '0') : id);
+						tbody.append(
+							'<tr>' +
+							'<td class="text-center"><small>' + folio + '</small></td>' +
+							'<td class="text-left"><small>' + e.nombre.toUpperCase() + '</small></td>' +
+							'<td class="text-center"><small><strong>' + e.total_intentos + '</strong></small></td>' +
+							'</tr>'
+						);
+					});
+				}
+			}, 'json');
+		});
+	</script>
+<?php endif; ?>

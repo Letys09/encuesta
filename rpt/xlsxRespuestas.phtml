@@ -1,0 +1,123 @@
+<?php
+	use PhpOffice\PhpSpreadsheet\Spreadsheet;
+	use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+	use PhpOffice\PhpSpreadsheet\Style\Fill;
+	use PhpOffice\PhpSpreadsheet\Style\Alignment;
+
+	$spreadsheet = new Spreadsheet();
+	$sheet = $spreadsheet->getActiveSheet();
+	$sheet->setTitle('Respuestas');
+
+	// --- Encabezado de la encuesta ---
+	$nombreEncuesta = isset($encuesta->nombre) ? $encuesta->nombre : 'Encuesta';
+	$sheet->mergeCells('A1:' . \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($preguntas) + 2) . '1');
+	$sheet->setCellValue('A1', mb_strtoupper($nombreEncuesta));
+	$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(13);
+	$sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+
+	// --- Fila de cabecera de columnas ---
+	$headerRow = 3;
+	$sheet->setCellValue('A' . $headerRow, '# INVITADO');
+	$sheet->setCellValue('B' . $headerRow, 'FECHA');
+	$colIdx = 3;
+	foreach ($preguntas as $p) {
+		$colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx);
+		$sheet->setCellValue($colLetter . $headerRow, mb_strtoupper($p->pregunta));
+		$colIdx++;
+	}
+
+	$lastColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx - 1);
+	$sheet->getStyle('A' . $headerRow . ':' . $lastColLetter . $headerRow)->applyFromArray([
+		'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+	]);
+
+	// --- Filas de datos ---
+	$dataRow = $headerRow + 1;
+	$respuestasPorPregunta = []; // Inicializar array para contar respuestas
+	
+	foreach ($filas as $fila) {
+		$sheet->setCellValue('A' . $dataRow, $fila['num']);
+		$sheet->setCellValue('B' . $dataRow, date('d/m/Y H:i', strtotime($fila['inicio'])));
+		$colIdx = 3;
+		foreach ($preguntas as $p) {
+			$colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx);
+			$respuesta = isset($fila['p_' . $p->ID_pregunta]) ? $fila['p_' . $p->ID_pregunta] : '';
+			$sheet->setCellValue($colLetter . $dataRow, $respuesta);
+			
+			// Contar respuestas por pregunta
+			if ($respuesta !== '') {
+				if (!isset($respuestasPorPregunta[$p->ID_pregunta])) {
+					$respuestasPorPregunta[$p->ID_pregunta] = [];
+				}
+				if (!isset($respuestasPorPregunta[$p->ID_pregunta][$respuesta])) {
+					$respuestasPorPregunta[$p->ID_pregunta][$respuesta] = 0;
+				}
+				$respuestasPorPregunta[$p->ID_pregunta][$respuesta]++;
+			}
+			$colIdx++;
+		}
+
+		// Alternate row color
+		if ($dataRow % 2 === 0) {
+			$lastDataCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx - 1);
+			$sheet->getStyle('A' . $dataRow . ':' . $lastDataCol . $dataRow)->applyFromArray([]);
+		}
+
+		$dataRow++;
+	}
+
+	// --- Tabla de resumen de respuestas ---
+	$summaryStartCol = $colIdx + 1; // Columna después del último dato
+	$summaryStartColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($summaryStartCol);
+	$summaryRow = $headerRow;
+
+	foreach ($preguntas as $preguntaIdx => $p) {
+		// Encabezado de la pregunta
+		$sheet->setCellValue($summaryStartColLetter . $summaryRow, mb_strtoupper($p->pregunta));
+		$sheet->getStyle($summaryStartColLetter . $summaryRow)->getFont()->setBold(true);
+		$summaryRow++;
+
+		// Encabezados de columna
+		$sheet->setCellValue($summaryStartColLetter . $summaryRow, 'Respuesta');
+		$nextColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($summaryStartCol + 1);
+		$sheet->setCellValue($nextColLetter . $summaryRow, 'Total');
+		$sheet->getStyle($summaryStartColLetter . $summaryRow . ':' . $nextColLetter . $summaryRow)->getFont()->setBold(true);
+		$sheet->getStyle($summaryStartColLetter . $summaryRow . ':' . $nextColLetter . $summaryRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+		$summaryRow++;
+
+		// Ordenar respuestas de mayor a menor
+		if (isset($respuestasPorPregunta[$p->ID_pregunta])) {
+			$respuestasOrdenadas = $respuestasPorPregunta[$p->ID_pregunta];
+			arsort($respuestasOrdenadas); // Ordena de mayor a menor
+
+			foreach ($respuestasOrdenadas as $respuesta => $cantidad) {
+				$sheet->setCellValue($summaryStartColLetter . $summaryRow, $respuesta);
+				$sheet->setCellValue($nextColLetter . $summaryRow, $cantidad);
+				$sheet->getStyle($nextColLetter . $summaryRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+				$summaryRow++;
+			}
+		}
+
+		$summaryRow++; // Salto entre preguntas
+	}
+
+	// Auto-size columns de resumen
+	$sheet->getColumnDimension($summaryStartColLetter)->setWidth(30);
+	$nextColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($summaryStartCol + 1);
+	$sheet->getColumnDimension($nextColLetter)->setWidth(10);
+
+	// --- Auto-size columns ---
+	$sheet->getColumnDimension('A')->setWidth(6);
+	$sheet->getColumnDimension('B')->setWidth(18);
+	for ($c = 3; $c < $colIdx; $c++) {
+		$sheet->getColumnDimension(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($c))->setWidth(30);
+	}
+
+	$writer = new Xlsx($spreadsheet);
+	$filename = 'Respuestas_' . preg_replace('/[^A-Za-z0-9_]/', '_', $nombreEncuesta) . '_' . date('YmdHis') . '.xlsx';
+	header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+	header('Content-Disposition: attachment; filename="' . $filename . '"');
+	header('Cache-Control: max-age=0');
+	$writer->save('php://output');
+?>

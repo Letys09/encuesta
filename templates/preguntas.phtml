@@ -1,0 +1,773 @@
+<?php include 'header.phtml'; ?>
+<?php if( $_SESSION['diferencia'] >= 60 ) : ?>
+	<?php include 'footer.phtml'; ?>
+<?php else : ?>
+	<div class="row page-titles">
+		<div class="col-md-5 align-self-center">
+			<h3 class="text-themecolor"><i class="fa fa-users"></i> Preguntas</h3>
+		</div>
+	</div>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-12">
+				<div class="card">
+					<div class="card-body">
+						<h4 class="card-title">Preguntas registradas</h4>
+						<h6 class="card-subtitle">Crea, edita y elimina preguntas para tus encuestas.</h6>
+						<div class="table-responsive">
+							<table id="tbl-preguntas" class="table table-hover table-striped"></table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="frm-pregunta" class="modal fade">
+			<div class="modal-dialog">
+				<div class="modal-content d-flex p-2">
+					<div class="modal-header">
+						<h3 class="modal-title">Pregunta</h3>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label class="col-form-label ml-0 font-weight-bold text-left" for="pregunta-tipo">Tipo de pregunta *</label>
+							<select id="pregunta-tipo" class="form-control">
+								<option value="1">Abierta</option>
+								<option value="2">Opción múltiple</option>
+								<option value="3">Puntuación</option>
+								<option value="4">Postulación</option>
+								<option value="5" style="display: none;">Votación</option>
+							</select>
+						</div>
+						<div class="form-group row" id="puntuacion-container" style="display: none;">
+							<div class="col-6">
+								<label class="col-form-label ml-0 font-weight-bold text-left" for="puntuacion-select">Escala *</label>
+								<select id="puntuacion-select" class="form-control">
+									<option value="0" selected disabled>-- Selecciona --</option>
+									<option value="1-5">1 — 5</option>
+									<option value="1-10">1 — 10</option>
+								</select>
+							</div>
+							<div class="col-6">
+								<label class="col-form-label ml-0 font-weight-bold text-left" for="pregunta-emoji">Ícono *</label>
+								<select id="pregunta-emoji" class="form-control">
+									<option value="" selected disabled>-- Selecciona --</option>
+									<option value="0">&#9733; Estrellas</option>
+									<option value="1">&#128512; Caritas</option>
+									<option value="2">&#9635; Números</option>
+								</select>
+							</div>
+							<div class="col-12 mt-2">
+								<label class="col-form-label ml-0 font-weight-bold text-left" for="puntuacion-texto">Texto principal (sugerido)</label>
+								<select id="puntuacion-texto" class="form-control">
+									<option value="" selected disabled>-- Selecciona --</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<textarea id="pregunta-pregunta" class="form-control data-pregunta not-empty" cols="30" rows="5" placeholder="Ingresa el contenido de la pregunta"></textarea>
+						</div>
+						<div class="form-group" id="opciones-container" style="display: none;">
+							<label class="col-form-label ml-0 font-weight-bold text-left" for="pregunta-opciones">Opciones *</label>
+							<textarea id="pregunta-opciones" class="form-control" cols="30" rows="5" placeholder="Ingresa las opciones separadas por comas"></textarea>
+						</div>
+					</div>
+					<div class="modal-footer d-flex justify-content-end">
+						<input type="hidden" id="pregunta-ID_pregunta" value="0">
+						<button type="button" class="btn btn-inverse waves-effect waves-light m-r-20" data-dismiss="modal">Cancelar</button>
+						<button type="button" class="btn btn-success waves-effect waves-light" id="btnSavePregunta">Guardar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="frm-qr" class="modal fade">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content d-flex p-2">
+					<div class="modal-header">
+						<h3 class="modal-title">Códigos QR</h3>
+					</div>
+					<div class="modal-body">
+						<p class="text-muted mb-3">Escribe un valor por línea y genera sus códigos QR.</p>
+						<div class="form-group">
+							<label class="font-weight-bold" for="qr-values-input">Valores de la empresa</label>
+							<textarea id="qr-values-input" class="form-control" rows="6" placeholder="Honestidad&#10;Responsabilidad&#10;Respeto"></textarea>
+							<small class="form-text text-muted" id="qr-values-counter">0 valores detectados</small>
+						</div>
+						<div class="text-right mb-3">
+							<button type="button" class="btn btn-primary" id="btnGenerateQr">Generar QR</button>
+						</div>
+						<div id="qr-values-container" class="row"></div>
+						<div id="qr-empty" class="alert alert-warning mb-0" style="display: none;">Aún no hay códigos QR generados.</div>
+						<div class="modal-footer d-flex justify-content-end">
+							<button type="button" class="btn btn-inverse waves-effect waves-light m-r-20" data-dismiss="modal">Salir</button>
+							<button type="button" class="btn btn-success" id="btnDownloadAllQr">Descargar todos</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="frm-encuestas" class="modal fade">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content d-flex p-2">
+					<div class="modal-header">
+						<h3 class="modal-title"></h3>
+					</div>
+					<div class="modal-body">
+						<div class="table-responsive">
+							<table id="tbl-encuestas" class="table table-hover table-striped w-100">
+								<thead>
+									<tr>
+										<th class="font-weight-bold text-center text-nowrap">Folio</th>
+										<th class="font-weight-bold text-left w-75">Nombre</th>
+										<th class="font-weight-bold text-center text-nowrap"></th>
+									</tr>
+								</thead>
+								<tbody></tbody>
+							</table>
+						</div>
+					</div>
+					<div class="modal-footer d-flex justify-content-end">
+						<button type="button" class="btn btn-inverse waves-effect waves-light m-r-20" data-dismiss="modal">Cerrar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<?php include 'footer.phtml'; ?>
+	<script>
+		$(function() {
+			$apiUrl = '<?= URL_API ?>';
+			var qrValues = [];
+			var qrMaxValues = 14;
+
+			function parseInputValues() {
+				var raw = $('#qr-values-input').val() || '';
+				var lines = raw.split(/\r?\n/);
+				var uniq = {};
+				var result = [];
+
+				$.each(lines, function(_, line) {
+					var value = $.trim(line);
+					if(value.length === 0) {
+						return;
+					}
+
+					var key = value.toLowerCase();
+					if(uniq[key]) {
+						return;
+					}
+
+					uniq[key] = true;
+					result.push(value);
+				});
+
+				return result;
+			}
+
+			function updateCounter() {
+				var count = parseInputValues().length;
+				$('#qr-values-counter').text(count + ' valores detectados');
+			}
+
+			function fillInputFromQrValues(values) {
+				if(!values || values.length === 0) {
+					$('#qr-values-input').val('');
+					updateCounter();
+					return;
+				}
+
+				var text = values.map(function(item) {
+					return item.nombre;
+				}).join('\n');
+				$('#qr-values-input').val(text);
+				updateCounter();
+			}
+
+			function renderQrCards(values) {
+				var container = $('#qr-values-container');
+				container.empty();
+
+				if(!values || values.length === 0) {
+					$('#qr-empty').show();
+					return;
+				}
+
+				$('#qr-empty').hide();
+				$.each(values, function(index, item) {
+					var card = $('<div class="col-12 col-md-6 col-lg-4 mb-3"></div>');
+					var content = `
+						<div class="card h-100">
+							<div class="card-body text-center">
+								<h6 class="font-weight-bold mb-1">${item.nombre}</h6>
+								<img src="${item.image_url}" alt="QR ${item.nombre}" class="img-fluid" style="max-width: 180px;">
+								<a href="${item.image_url}" class="btn btn-sm btn-outline-success btn-download-qr" data-file-name="${item.download_name}">Descargar</a>
+								<button class="btn btn-outline-danger btn-sm btn-delete-qr" toggle="tooltip" title="Eliminar" data-code="${item.codigo}" data-id="${item.id}"><i class="mdi mdi-delete"></i></button>
+							</div>
+						</div>`;
+
+					card.html(content);
+					container.append(card);
+				});
+			}
+
+			function triggerDownload(url, fileName) {
+				var anchor = document.createElement('a');
+				anchor.href = url;
+				anchor.download = fileName;
+				document.body.appendChild(anchor);
+				anchor.click();
+				document.body.removeChild(anchor);
+			}
+
+			function loadQrValues() {
+				blockPage();
+				$.get($apiUrl+'pregunta/qr/values', function(resp) {
+					if(resp.response) {
+						qrValues = resp.result || [];
+						renderQrCards(qrValues);
+						fillInputFromQrValues(qrValues);
+						$('#frm-qr').modal('show');
+					} else {
+						swal({ type: 'warning', title: 'Oops!', text: resp.message || 'No fue posible cargar la relacion de codigos', timer: 4000 });
+					}
+				}, 'json').fail(function() {
+					swal({ type: 'warning', title: 'Oops!', text: 'No fue posible cargar la relacion de codigos', timer: 4000 });
+				}).always(function() {
+					$.unblockUI();
+				});
+			}
+
+			$('#btnGenerateQr').on('click', function(e) {
+				e.preventDefault();
+				var values = parseInputValues();
+
+				if(values.length === 0) {
+					swal({ type: 'warning', title: 'Oops!', text: 'Ingresa al menos un valor para generar su QR', timer: 4000 });
+					return;
+				}
+
+				if(values.length > qrMaxValues) {
+					swal({ type: 'warning', title: 'Oops!', text: 'Solo puedes generar hasta ' + qrMaxValues + ' valores', timer: 4000 });
+					return;
+				}
+
+				blockPage();
+				$.post($apiUrl+'pregunta/qr/sync', { values_json: JSON.stringify(values) }, function(resp) {
+					if(resp.response) {
+						qrValues = resp.result || [];
+						renderQrCards(qrValues);
+						fillInputFromQrValues(qrValues);
+						swal({ type: 'success', title: 'Listo', text: "QR's generados", timer: 2500 });
+					} else {
+						swal({ type: 'warning', title: 'Oops!', text: resp.message || 'No fue posible guardar los valores', timer: 4000 });
+					}
+				}, 'json').fail(function() {
+					swal({ type: 'warning', title: 'Oops!', text: 'No fue posible guardar los valores', timer: 4000 });
+				}).always(function() {
+					$.unblockUI();
+				});
+			});
+
+			$('#qr-values-input').on('input', function() {
+				updateCounter();
+			});
+
+			$(document).on('click', '.btn-download-qr', function(e) {
+				e.preventDefault();
+				triggerDownload($(this).attr('href'), $(this).data('file-name'));
+			});
+
+			$(document).on('click', '.btn-delete-qr', function(e) {
+				e.preventDefault();
+				var code = $(this).data('code');
+				var id = $(this).data('id');
+				swal({ title: "Eliminar código QR", text: "¿Deseas eliminar este código QR?", type: "warning", showCancelButton: true, cancelButtonText: "Cancelar", confirmButtonColor: "#DD6B55", confirmButtonText: "Si, eliminar", closeOnConfirm: true }, function(user_response) {
+					if(user_response) {
+						blockPage();
+						$.ajax({ url: $apiUrl+'pregunta/qr/delete/'+id, type: 'POST', dataType: 'json' }).done(function(resp) {
+							if(resp.response) {
+								qrValues = qrValues.filter(function(item) { return item.id !== id; });
+								renderQrCards(qrValues);
+								fillInputFromQrValues(qrValues);
+								swal({ type: 'success', title: '¡Listo!', text: 'Código QR eliminado', timer: 4000 });
+							} else {
+								swal({ type: 'warning', title: 'Oops!', text: resp.message || 'No fue posible eliminar el código QR', timer: 4000 });
+							}
+						}).fail(function() {
+							swal({ type: 'warning', title: 'Oops!', text: 'No fue posible eliminar el código QR', timer: 4000 });
+						}).always(function() {
+							$.unblockUI();
+						});
+					}
+				});
+			});
+
+			$('#btnDownloadAllQr').on('click', function(e) {
+				e.preventDefault();
+				if(qrValues.length === 0) {
+					return;
+				}
+
+				$.each(qrValues, function(index, item) {
+					setTimeout(function() {
+						triggerDownload(item.image_url, item.download_name);
+					}, index * 150);
+				});
+			});
+
+			$('#frm-encuestas').on('shown.bs.modal', function() {
+				if($.fn.DataTable.isDataTable('#tbl-encuestas')) {
+					$('#tbl-encuestas').DataTable().columns.adjust().draw(false);
+				}
+			});
+
+			$('#pregunta-pregunta').change(function() {
+				$('.invalid-name').remove();
+				$.get($apiUrl+'pregunta/getByPregunta/'+$('#pregunta-pregunta').val(), function(pregunta) {
+					if(pregunta.result.length > 0) {
+						if(pregunta.result.length>1 || pregunta.result[0].ID_pregunta!=parseInt($('#pregunta-ID_pregunta').val())) {
+							$errLabel = $('<div class="invalid-name">Ya existe una pregunta con el mismo texto</div>');
+							$('#pregunta-pregunta').after($errLabel);
+							$errLabel.show();
+						}
+					}
+				}, 'json');
+			});
+
+			$('#pregunta-tipo').change(function() {
+				if($(this).val() == 2) { $('#opciones-container').show(); $('#puntuacion-container').hide(); $('#puntuacion-select').val('1-5'); }
+				else if($(this).val() == 3) { 
+					$('#opciones-container').hide(); $('#pregunta-opciones').val('');
+					$('#puntuacion-select').val('0');
+					$('#pregunta-emoji').val('');
+					$('#puntuacion-texto').empty().append('<option value="" selected disabled>-- Selecciona --</option>');
+					$('#puntuacion-container').show();
+					setPreguntaTextReadonly(false);
+				}
+				else {
+					$('#opciones-container').hide();
+					$('#pregunta-opciones').val('');
+					$('#puntuacion-container').hide();
+					$('#puntuacion-select').val('');
+					$('#puntuacion-texto').empty().append('<option value="" selected disabled>-- Selecciona --</option>');
+					setPreguntaTextReadonly(false);
+				}
+				$('.invalid-tooltip').remove();
+			});
+
+			function getMainTextsByScale(scale) {
+				if(scale === '1-5') {
+					return [
+						'Del 1-5, ¿qué tan probable es que ',
+						'Del 1-5, ¿qué tan satisfecho(a) estás con ',
+						'Del 1-5, ¿qué tan de acuerdo estás con '
+					];
+				}
+
+				if(scale === '1-10') {
+					return [
+						'Del 1-10, ¿qué tan probable es que ',
+						'Del 1-10, ¿qué tan satisfecho(a) estás con ',
+						'Del 1-10, ¿qué tan de acuerdo estás con '
+					];
+				}
+
+				return [];
+			}
+
+			function getSuggestedMainText(scale, fullText) {
+				var baseText = $.trim(fullText || '');
+				if(!baseText) {
+					return '';
+				}
+
+				var options = getMainTextsByScale(scale);
+				for(var i = 0; i < options.length; i++) {
+					if(baseText.indexOf(options[i]) === 0) {
+						return options[i];
+					}
+				}
+
+				return '';
+			}
+
+			function populateMainTextSelect(scale, selectedText) {
+				var $select = $('#puntuacion-texto');
+				$select.empty().append('<option value="" selected disabled>-- Selecciona --</option>');
+
+				if(!scale || scale === '0') {
+					setPreguntaTextReadonly(false);
+					return;
+				}
+
+				var options = getMainTextsByScale(scale);
+				options.forEach(function(texto) {
+					$select.append('<option value="'+texto+'">'+texto+'</option>');
+				});
+
+				if(selectedText && selectedText !== '') {
+					var suggestedText = getSuggestedMainText(scale, selectedText);
+					if(suggestedText) {
+						$select.val(suggestedText);
+					}
+					$('#pregunta-pregunta').val(selectedText);
+					setPreguntaTextReadonly(false);
+				} else {
+					setPreguntaTextReadonly(false);
+				}
+			}
+
+			function setPreguntaTextReadonly(locked) {
+				$('#pregunta-pregunta').prop('readonly', locked);
+				if(locked) {
+					$('#pregunta-pregunta').addClass('bg-light');
+				} else {
+					$('#pregunta-pregunta').removeClass('bg-light');
+				}
+			}
+
+			$('#puntuacion-select').on('change', function() {
+				populateMainTextSelect($(this).val());
+			});
+
+			$('#puntuacion-texto').on('change', function() {
+				var selected = $(this).val();
+				if(selected) {
+					$('#pregunta-pregunta').val(selected).focus();
+					setPreguntaTextReadonly(false);
+				}
+			});
+
+			getPreguntas(); 
+			function getPreguntas() { 
+				cleanTable('tbl-preguntas'); 
+				createTable('tbl-preguntas', true); 
+			}
+
+			function clearData() {
+				$('.invalid-tooltip').remove();
+				$('.status:not(small), .help-block').addClass('hide');
+				$('#pregunta-tipo').attr('disabled', false).prop('disabled', false);
+				$('#pregunta-tipo option[value="5"]').hide();
+				$('#frm-pregunta textarea').val('');
+				$('#puntuacion-texto').empty().append('<option value="" selected disabled>-- Selecciona --</option>');
+				setPreguntaTextReadonly(false);
+				$('#pregunta-ID_pregunta').val(0);
+				$('#pregunta-tipo').val(1).trigger('change');
+			}
+
+			$('tbody').on('click', '.btnEditPregunta', function(event) { event.preventDefault(); blockPage();
+				$('#frm-pregunta .validation-error-label').remove();
+				clearData();
+
+				id = $(this).parents('tr').data('id');
+				$.get($apiUrl+'pregunta/get/'+id, function(data) {
+					$('#pregunta-tipo option[value="5"]').hide();
+					$.each(data.result, function(index, value) { 
+						$('#pregunta-'+index).val(value); 
+					});
+
+					if(data.result.tipo == 2) { 
+						$('#opciones-container').show(); 
+						$('#pregunta-opciones').val(data.result.opciones);
+						$('#puntuacion-container').hide();
+					} else if(data.result.tipo == 3) {
+						$('#opciones-container').hide();
+						$('#pregunta-opciones').val('');
+						$('#puntuacion-container').show();
+						$('#puntuacion-select').val(data.result.escala ? data.result.escala : '0');
+						$('#pregunta-emoji').val(data.result.icono !== null && data.result.icono !== undefined ? String(data.result.icono) : '');
+						populateMainTextSelect(data.result.escala, data.result.pregunta);
+					} else if(data.result.tipo == 5) {
+						$('#pregunta-tipo option[value="5"]').show().val(5);
+						$('#pregunta-tipo').attr('disabled', true).prop('disabled', true);
+						$('#opciones-container').hide();
+					}else { 
+						$('#opciones-container').hide(); 
+						$('#pregunta-opciones').val('');
+						$('#puntuacion-container').hide();
+						setPreguntaTextReadonly(false);
+					}
+
+					$('.help-block').removeClass('hide');
+
+					$('#frm-pregunta').modal('show');
+					$.unblockUI();
+				}, 'json');
+			});
+
+			$('#frm-pregunta').on('shown.bs.modal', function () { $('#pregunta-pregunta').focus(); });
+
+			$('#btnSavePregunta').click(function() {
+				$('.invalid-tooltip').remove();
+				id = parseInt($('#pregunta-ID_pregunta').val());
+				data = { 
+					pregunta: $('#pregunta-pregunta').val(), 
+					tipo: $('#pregunta-tipo').val(), 
+					opciones: $('#pregunta-opciones').val(),
+					escala: $('#puntuacion-select').val(),
+					icono: $('#puntuacion-container').is(':visible') ? $('#pregunta-emoji').val() : ''
+				};
+
+				var hasError = false;
+				$errLabel = $('<div class="invalid-tooltip"></div>');
+				if(data.pregunta == '') {
+					hasError = true;
+					$errLabel.html('Debe ingresar el contenido de la pregunta');
+					$('#pregunta-pregunta').after($errLabel);
+					$errLabel.show();
+				}
+
+				if(data.tipo == '2' && data.opciones == '') {
+					hasError = true;
+					$errLabel.html('Debe ingresar las opciones de la pregunta');
+					$('#pregunta-opciones').after($errLabel);
+					$errLabel.show();
+				}
+
+				if(data.tipo == '3') {
+					if(!data.escala || data.escala == '0') {
+						hasError = true;
+						$('#puntuacion-select').after('<div class="invalid-tooltip">Debe seleccionar una escala</div>');
+					}
+
+					if(!data.icono) {
+						hasError = true;
+						$('#pregunta-emoji').after('<div class="invalid-tooltip">Debe seleccionar un icono</div>');
+					}
+				}
+
+				if(hasError) {
+					$('.invalid-tooltip').show();
+					limpiar();
+					return;
+				}
+
+				blockPage();
+				if(id == 0) {
+						data.status = 1;
+						data.fecha = moment().format('YYYY-MM-DDTHH:mm:ss');
+						$.post(`${$apiUrl}pregunta/add/`, data, function(resp) {
+							if(resp.response) {
+								data.ID_pregunta = resp.result;
+								cleanTable('tbl-preguntas');  createTable('tbl-preguntas', true);
+								$('#pregunta-ID_pregunta').val(0);
+
+								$('#frm-pregunta').modal('hide');
+								swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+							} else { swal({ type:"warning", title:"Oops!", text:resp.message, timer:4000 }); }
+
+							$.unblockUI();
+						}, 'json');
+				} else {
+					$.ajax({ url:$apiUrl+'pregunta/edit/'+id, type:'POST', dataType:'json', data:data }).done(function(resp) {
+						if(resp.response) {
+							$('#pregunta-ID_pregunta').val(0);
+							$('#tbl-preguntas').DataTable().ajax.reload(function(response) { 
+								swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+
+								$('#frm-pregunta').modal('hide'); 
+								$.unblockUI();
+							}, false);
+						} else { swal({ type:"warning", title:"Oops!", text:resp.message, timer:4000 }); }
+					});
+				}
+			});
+
+			$('tbody').on('click', '.btnDelPregunta', function(event) { event.preventDefault(); blockPage();
+				trp = $(this).parents('tr');
+				id = trp.data('id');
+
+				$.get($apiUrl+'universo/getByPregunta/'+id+'/1', function(encuestas) { 
+					if(encuestas.total == 0) {
+						swal({title:"Eliminar pregunta",text:"No podrá restaurar la pregunta.<br>Si la pregunta esta en una encuesta inactiva también será dada de baja de dicha encuesta.",type:"warning",html:true,showCancelButton:true,cancelButtonText:"Cancelar",confirmButtonColor:"#DD6B55",confirmButtonText:"Si, eliminar",closeOnConfirm:false}, function(user_response) {
+							if(user_response) {
+								$.ajax({url:$apiUrl+'pregunta/del/'+id,type:'POST',dataType:'json',success:function(resp) {
+									if(resp.response) {
+										cleanTable('tbl-preguntas'); trp.remove(); createTable('tbl-preguntas');
+										swal({type:"success",title:"¡Listo!",text:"Se eliminó la pregunta",timer:4000});
+									} else { swal({ type: "warning", title: "Oops!", text: resp.message, timer: 4000 }); }
+				
+									$.unblockUI();
+								}});
+							} else { $.unblockUI(); }
+						});
+					} else { swal({ type: "warning", title: "Oops!", text: "Elimina la pregunta de todas las encuestas activas donde haya sido agregada primero", timer: 4000 }, function() { $.unblockUI(); }); }
+				}, 'json');
+			});
+
+			$('tbody').on('click', '.btnAlta', function(event) { event.preventDefault();
+				trp = $(this).parents('tr');
+				id = trp.data('id');
+				swal({ title:"Activar pregunta", text:"¿Desea activar la pregunta?<br>Esta volverá a ser visible en todas las encuestas donde haya sido agregada", type:"warning", html:true, showCancelButton:true, cancelButtonText:"Cancelar", confirmButtonText:"Si, activar", closeOnConfirm:true }, function() {
+					blockPage();
+					$.ajax({ url: $apiUrl+'pregunta/edit/'+id, type: 'POST', dataType: 'json', data: {status: 1} }).done(function(resp) {
+						if(resp.response) {
+							$('#tbl-preguntas').DataTable().ajax.reload(function(response) { 
+								swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+
+								$.unblockUI(); 
+							}, false);
+						} else { swal({ type: "warning", title: "Oops!", text: resp.message, timer: 4000 }, function() { $.unblockUI(); }); }
+					});
+				});
+			});
+
+			$('tbody').on('click', '.btnBaja', function(event) { event.preventDefault(); blockPage();
+				trp = $(this).parents('tr');
+				id = trp.data('id');
+				$.get($apiUrl+'universo/getByPregunta/'+id+'/1', function(encuestas) { 
+					if(encuestas.total == 0) {
+						swal({ title:"Inactivar pregunta", text:"¿Desea inactivar la pregunta?<br>Si la pregunta está en una encuesta inactiva y después activa esta última, la pregunta no será visible", type:"warning", html:true, showCancelButton:true, cancelButtonText:"Cancelar", confirmButtonText:"Si, inactivar", closeOnConfirm:true }, function(user_response) {
+							if(user_response) {
+								$.ajax({ url: $apiUrl+'pregunta/edit/'+id, type: 'POST', dataType: 'json', data: {status: 2} }).done(function(resp) {
+									if(resp.response) {
+										$('#tbl-preguntas').DataTable().ajax.reload(function(response) { 
+											swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+		
+											$.unblockUI(); 
+										}, false);
+									} else { swal({ type: "warning", title: "Oops!", text: resp.message, timer: 4000 }, function() { $.unblockUI(); }); }
+								});
+							} else { $.unblockUI(); }
+						});
+					} else { swal({ type: "warning", title: "Oops!", text: "Elimina la pregunta de todas las encuestas activas donde haya sido agregada primero", timer: 4000 }, function() { $.unblockUI(); }); }
+				}, 'json');
+			});
+
+			$('tbody').on('click', '.btnVerEncuestas', function(event) { event.preventDefault(); blockPage();
+				trp = $(this).parents('tr');
+				id = trp.data('id');
+				trInfo = getTrElement('tbl-preguntas', trp);
+				$.get($apiUrl+'universo/getByPregunta/'+id+'/1', function(encuestas) { 
+					$('#frm-encuestas .modal-title').html('Encuestas pregunta folio <strong>'+trInfo.find('.folio').text()+'</strong>');
+					container = $('#tbl-encuestas tbody'); cleanTable('tbl-encuestas'); container.empty();
+					$.each(encuestas.result, function(index, encuesta) { folio = encuesta.ID_encuesta; folio = "E-"+(folio.length<3? folio.padStart(3, '0'): folio);
+						tr = $('<tr data-id="'+encuesta.ID_universo+'"></tr>').appendTo(container);
+						tr.append('<td class="text-center"><small class="folio">'+folio+'</small></td>');
+						tr.append('<td class="text-left"><small class="nombre">'+encuesta.nombre.toUpperCase()+'</small></td>');
+						tr.append('<td class="text-center"><small class="nombre"><a href="#" data-toogle="tooltip" data-placement="top" title="Dar de baja" class="btnBajaEncuesta"><i class="mdi mdi-delete" style="color: red;"></i></a></small></td>');
+					});
+
+					createTable('tbl-encuestas', false);
+					$('#frm-encuestas').modal('show');
+				}, 'json');
+			});
+
+			$('tbody').on('click', '.btnBajaEncuesta', function(event) { event.preventDefault(); blockPage();
+				trp = $(this).parents('tr');
+				id = trp.data('id');
+				trInfo = getTrElement('tbl-encuestas', trp);
+
+				swal({title:"Dar de baja pregunta",text:"No podrá restaurar la pregunta",type:"warning",html:true,showCancelButton:true,cancelButtonText:"Cancelar",confirmButtonColor:"#DD6B55",confirmButtonText:"Si, eliminar",closeOnConfirm:false}, function(user_response) {
+					if(user_response) {
+						$.ajax({url:$apiUrl+'universo/del/'+id,type:'POST',dataType:'json',success:function(resp) {
+							if(resp.response) {
+								cleanTable('tbl-encuestas'); trp.remove(); createTable('tbl-encuestas');
+								swal({type:"success",title:"¡Listo!",text:"Se dio de baja la pregunta",timer:4000});
+							} else { swal({ type: "warning", title: "Oops!", text: resp.message, timer: 4000 }); }
+		
+							$.unblockUI();
+						}});
+					} else { $.unblockUI(); }
+				});
+			});
+
+			var temporal = null;
+			function evaluar(tbl, time) {
+				setTimeout(() => {
+					if(time == temporal) {
+						$("#"+tbl+"_filter label input").val($.trim($('#'+tbl+'-bus').val())).trigger('keyup');
+					}
+				}, 1000);
+			}
+
+			function limpiar(){
+				setTimeout(() => {
+					$('.invalid-tooltip').remove();
+				}, 3000);
+			}
+
+			function createTable(tbl, paging=true) { blockPage();
+				container = $('<div class="form-inline align-items-center"></div>');
+
+				searchContainer = $('<div class="input-group input-group-sm"></div>').appendTo(container);
+				search = $('<input type="text" id="'+tbl+'-bus" placeholder="Buscar por nombre" class="form-control">').appendTo(searchContainer);
+
+				if(['tbl-preguntas'].includes(tbl)) {
+					url = $apiUrl+'pregunta/getAllDataTables/0/0/_';
+					columnDefs = [
+						{'data': 'ID_pregunta', 'title': 'Folio', 'orderable': true, 'targets': [0], 'className': 'text-center'},
+						{'data': 'fecha', 'title': 'Agregada', 'orderable': true, 'targets': [1], 'className': 'text-center'},
+						{'data': 'pregunta', 'title': 'Pregunta', 'orderable': true, 'targets': [2], 'className': 'text-left'},
+						{'data': 'tipo', 'title': 'Tipo', 'orderable': true, 'targets': [3], 'className': 'text-left'},
+						{'data': 'opciones', 'title': 'Opciones', 'orderable': true, 'targets': [4], 'className': 'text-left'},
+						{'data': 'status', 'title': 'Estatus', 'orderable': true, 'targets': [5], 'className': 'text center'},
+						{'data': 'acciones', 'title': '', 'orderable': false, 'targets': [6], 'className': 'text-right'},
+					];
+
+					buttonsContainer = $('<div class="buttons"></div>').appendTo(container);
+					buttonPDF = $('<button type="button" class="btn ml-2 btn-sm btn-inline-block" title="Exportar a PDF" id="btnPDF"><span class="mdi mdi-file-pdf-box fa-2x" style="color: red;"></span></button>').appendTo(buttonsContainer);
+					buttonExcel = $('<button type="button" class="btn btn-sm btn-inline-block" title="Exportar a Excel" id="btnExcel"><span class="mdi mdi-file-excel-box fa-2x" style="color: green;"></span></button>').appendTo(buttonsContainer);
+					buttonAdd = $('<button type="button" class="btn btn-sm btn-inline-block" title="Agregar" id="btnAdd"><span class="mdi mdi-library-plus fa-2x text-success"></span></button>').appendTo(buttonsContainer);
+					buttonQR = $('<button type="button" class="btn btn-sm btn-inline-block" title="Crear QR" id="btnQR"><span class="mdi mdi-qrcode fa-2x text-success"></span></button>').appendTo(buttonsContainer);
+					$('[data-toggle="tooltip"]').tooltip();
+
+					var table = $('#'+tbl).dataTable( {
+						scrollX: false,
+						paging: paging,
+						pagingType: "full_numbers",
+						dom: 'Rl<"#toolbar-'+tbl+'">frtip',
+						columnDefs: columnDefs,
+						scrollCollapse: true,
+						order: [[0,'desc']],
+						processing: true,
+						serverSide: true,
+						ajax: {
+							url: url,
+							type: 'GET',
+						},
+						createdRow: function(row, data, dataIndex) {
+							$(row).attr('data-id', data.data_id);
+						},
+						drawCallback: function(settings) {
+							$.unblockUI();
+						}
+					});
+				} else {
+					$('#'+tbl).dataTable({
+						scrollX: false,
+						autoWidth: false,
+						paging: paging,
+						pagingType: "full_numbers",
+						dom: 'Rl<"#toolbar-'+tbl+'">frtip',
+						columnDefs: [
+							{ targets: 0, width: '110px', className: 'text-center text-nowrap' },
+							{ targets: 1, width: '75%', className: 'text-left' },
+							{ targets: 2, width: '60px', className: 'text-center text-nowrap' }
+						],
+						order: [[0, 'asc']],
+						drawCallback: function(settings) {
+							$.unblockUI();
+						}
+					});
+				}
+
+				$('#toolbar-'+tbl+'').addClass(tbl == 'tbl-encuestas' ? 'form-inline w-100 mb-3' : 'form-inline pull-right').html(container.html());
+				$('#'+tbl).parents('.table-responsive').css('overflow', 'visible');
+				$("#"+tbl+"_filter label").hide();
+
+				$(document).find('#'+tbl+'-bus').off('keyup').keyup(function(e) { temporal = moment().format('x')+"-"+Math.random(); evaluar(tbl, temporal); });
+				$(document).find('#'+tbl+'-bus').off('search').on("search", function(evt) { $("#"+tbl+"_filter label input").val(undefined).trigger('keyup'); });
+				$(document).find('#btnAdd').off('click').click(function(e) { e.preventDefault(); clearData(); $('#frm-pregunta').modal('show'); });
+				$(document).find('#btnQR').off('click').click(function(e) {
+					e.preventDefault();
+					loadQrValues();
+				});
+				$(document).find('#btnPDF').off('click').click(function(e) { toSearch = $('#'+tbl+'-bus').val().length>0? $('#'+tbl+'-bus').val(): '_'; window.open($apiUrl+'pregunta/export/pdf/'+toSearch); });
+				$(document).find('#btnExcel').off('click').click(function(e) { toSearch = $('#'+tbl+'-bus').val().length>0? $('#'+tbl+'-bus').val(): '_'; window.open($apiUrl+'pregunta/export/xlsx/'+toSearch); });
+			}
+		});
+	</script>
+<?php endif; ?>

@@ -1,0 +1,96 @@
+<?php
+	include './core/defines.php';
+	require_once('../vendor/autoload.php');
+	require_once('../vendor/tecnickcom/tcpdf/tcpdf_import.php');
+
+	/* if(isset($_SESSION['usuario'])) {
+		$user = $_SESSION['usuario'];
+	}else{
+		header('Location: '.URL_ROOT.'/login');
+		exit();
+	} */
+	
+	// HEADER
+	$info = new stdClass();
+	/* $info->logo = true; 
+	$info->logoUrl = 'assets/images/header.png'; */
+
+	class MYPDF extends TCPDF {
+		protected $info;
+
+		public function Header() {
+			/* if($this->info->logo) {
+				$this->setJPEGQuality(90);
+				$this->Image($this->info->logoUrl, 40, 5, 130, 0);
+			} */
+		}
+
+		public function Footer() {
+			$this->SetY(-15);
+			$this->SetFillColor(255, 255, 255);
+			$this->SetFont(PDF_FONT_NAME_MAIN, '', 14);
+			$this->Cell(0, 3, SITE_NAME, 0, 0, 'L');
+			$this->SetX(10);
+			$this->SetFont(PDF_FONT_NAME_MAIN, '', 12);
+			$this->Cell(0, 3, 'Página '.$this->PageNo().' de '.$this->getAliasNbPages(), 0, 0, 'R');
+		}
+
+		public function setInfo($info) {
+			$this->info = $info;
+		}
+	}
+	
+	$pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+	// $pdf->setInfo($info);
+	$pdf->SetMargins(10, 30, 10, 30);
+	
+	$pdf->SetCreator('www.ddsmedia.net');
+	$pdf->SetAuthor(SITE_NAME);
+	$pdf->SetTitle(ucfirst($vista));
+	$pdf->SetKeywords('');
+	$pdf->SetFillColor(255, 255, 255);
+	$pdf->SetTextColor(0, 0, 0);
+	
+	$pdf->AddPage();
+
+	$pdf->SetY(10);
+	$pdf->SetFont(PDF_FONT_NAME_MAIN, 'B', 12);
+	$pdf->Cell(0, 10, 'REPORTE ENCUESTAS', 0, 1, 'C', 1);
+	
+	$pdf->SetY($pdf->getY()+5);
+	$pdf->SetFont(PDF_FONT_NAME_MAIN, 'B', 10);
+	$pdf->Cell(15, 10, 'Folio', 0, 0, 'C', 1);
+	$pdf->Cell(20, 10, 'Creación', 0, 0, 'C', 1);
+	$pdf->Cell(115, 10, 'Nombre', 0, 0, 'C', 1);
+	$pdf->Cell(25, 10, 'Num Preguntas', 0, 0, 'C', 1);
+	$pdf->Cell(20, 10, 'Estatus', 0, 1, 'C', 1);
+	
+	$counter = 0;
+	foreach($encuestas as $encuesta) { $counter++;
+		if($pdf->GetY() > 250) { 
+			$pdf->AddPage();
+			$pdf->SetXY(10, 25);
+			$pdf->SetFont(PDF_FONT_NAME_MAIN, 'B', 10);
+			$pdf->Cell(15, 10, 'Folio', 0, 0, 'C', 1);
+			$pdf->Cell(20, 10, 'Creación', 0, 0, 'C', 1);
+			$pdf->Cell(115, 10, 'Nombre', 0, 0, 'C', 1);
+			$pdf->Cell(25, 10, 'Num encuestas', 0, 0, 'C', 1);
+			$pdf->Cell(20, 10, 'Estatus', 0, 1, 'C', 1);
+		}
+
+		if($counter % 2 == 0) { $pdf->SetFillColor(231, 242, 244); }
+		else { $pdf->SetFillColor(255, 255, 255); }
+		$pdf->SetFont(PDF_FONT_NAME_MAIN, '', 9);
+
+		$folio = $encuesta->ID_encuesta;
+		$folio = "P-".(strlen($folio)<3? str_pad($folio, 3, '0', STR_PAD_LEFT): $folio);
+		$pdf->MultiCell(15, 10, $folio, 0, 'C', 1, 0);
+		$pdf->MultiCell(20, 10, date('d/m/Y', strtotime($encuesta->fecha)), 0, 'C', 1, 0);
+		$pdf->MultiCell(115, 10, ucfirst($encuesta->nombre), 0, 'L', 1, 0);
+		$pdf->MultiCell(25, 10, $encuesta->num_preguntas, 0, 'L', 1, 0);
+		$pdf->MultiCell(20, 10, $encuesta->status==1? 'Activo': 'Inactivo', 0, 'C', 1);
+	}
+
+	$pdf->Output('F');
+	exit();
+?>

@@ -1,0 +1,42 @@
+<?php
+	use PhpOffice\PhpSpreadsheet\Spreadsheet;
+	use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+	$spreadsheet = new Spreadsheet();
+	$sheet = $spreadsheet->getActiveSheet();
+
+	$sheet->setCellValue("A1", 'FOLIO');
+	$sheet->setCellValue("B1", 'AGREGADA');
+	$sheet->setCellValue("C1", 'PREGUNTA');
+	$sheet->setCellValue("D1", 'TIPO');
+	$sheet->setCellValue("E1", 'OPCIONES');
+	$sheet->setCellValue("F1", 'ESTATUS');
+	
+	$sheet->getStyle('A1:F1')->getFont()->setBold( true );
+	$sheet->getColumnDimension('A')->setAutoSize(true);
+	$sheet->getColumnDimension('B')->setAutoSize(true);
+	$sheet->getColumnDimension('C')->setAutoSize(true);
+	$sheet->getColumnDimension('D')->setAutoSize(true);
+	$sheet->getColumnDimension('E')->setAutoSize(true);
+	$sheet->getColumnDimension('F')->setAutoSize(true);
+	$sheet->calculateColumnWidths();
+	$sheet->setTitle('Preguntas');
+
+	$fila = 2;
+	foreach($preguntas as $pregunta) {
+		$folio = $pregunta->ID_pregunta;
+		$folio = "P-".(strlen($folio)<3? str_pad($folio, 3, '0', STR_PAD_LEFT): $folio);
+		$sheet->setCellValue("A".$fila, $folio);
+		$sheet->setCellValue("B".$fila, date('d/m/Y', strtotime($pregunta->fecha)));
+		$sheet->setCellValue("C".$fila, $pregunta->pregunta);
+		$sheet->setCellValue("D".$fila, $pregunta->tipo==1? 'Abierta': 'Opción múltiple');
+		$sheet->setCellValue("E".$fila, $pregunta->opciones);
+		$sheet->setCellValue("F".$fila, $pregunta->status==1? 'Activo': 'Inactivo');
+		$fila++;
+	}
+
+	$writer = new Xlsx($spreadsheet);
+	header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+	header("Content-Disposition: attachment; filename=\"Preguntas_".date('YmdHis').".xlsx\"");
+	$writer->save('php://output');
+?>

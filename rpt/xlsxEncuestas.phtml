@@ -1,0 +1,39 @@
+<?php
+	use PhpOffice\PhpSpreadsheet\Spreadsheet;
+	use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+	$spreadsheet = new Spreadsheet();
+	$sheet = $spreadsheet->getActiveSheet();
+
+	$sheet->setCellValue("A1", 'FOLIO');
+	$sheet->setCellValue("B1", 'CREACION');
+	$sheet->setCellValue("C1", 'NOMBRE');
+	$sheet->setCellValue("D1", 'NUM PREGUNTAS');
+	$sheet->setCellValue("E1", 'ESTATUS');
+	
+	$sheet->getStyle('A1:E1')->getFont()->setBold( true );
+	$sheet->getColumnDimension('A')->setAutoSize(true);
+	$sheet->getColumnDimension('B')->setAutoSize(true);
+	$sheet->getColumnDimension('C')->setAutoSize(true);
+	$sheet->getColumnDimension('D')->setAutoSize(true);
+	$sheet->getColumnDimension('E')->setAutoSize(true);
+	$sheet->calculateColumnWidths();
+	$sheet->setTitle('Encuestas');
+
+	$fila = 2;
+	foreach($encuestas as $encuesta) {
+		$folio = $encuesta->ID_encuesta;
+		$folio = "P-".(strlen($folio)<3? str_pad($folio, 3, '0', STR_PAD_LEFT): $folio);
+		$sheet->setCellValue("A".$fila, $folio);
+		$sheet->setCellValue("B".$fila, date('d/m/Y', strtotime($encuesta->fecha)));
+		$sheet->setCellValue("C".$fila, ucfirst($encuesta->nombre));
+		$sheet->setCellValue("D".$fila, $encuesta->num_preguntas);
+		$sheet->setCellValue("E".$fila, $encuesta->status==1? 'Activo': 'Inactivo');
+		$fila++;
+	}
+
+	$writer = new Xlsx($spreadsheet);
+	header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+	header("Content-Disposition: attachment; filename=\"Encuestas_".date('YmdHis').".xlsx\"");
+	$writer->save('php://output');
+?>

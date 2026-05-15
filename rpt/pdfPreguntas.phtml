@@ -1,0 +1,120 @@
+<?php
+	include './core/defines.php';
+	require_once('../vendor/autoload.php');
+	require_once('../vendor/tecnickcom/tcpdf/tcpdf_import.php');
+	
+	// HEADER
+	$info = new stdClass();
+
+	class MYPDF extends TCPDF {
+		protected $info;
+
+		public function Header() {}
+
+		public function Footer() {
+			$this->SetY(-15);
+			$this->SetFillColor(255, 255, 255);
+			$this->SetFont(PDF_FONT_NAME_MAIN, '', 14);
+			$this->Cell(0, 3, SITE_NAME, 0, 0, 'L');
+			$this->SetX(10);
+			$this->SetFont(PDF_FONT_NAME_MAIN, '', 12);
+			$this->Cell(0, 3, 'Página '.$this->PageNo().' de '.$this->getAliasNbPages(), 0, 0, 'R');
+		}
+
+		public function setInfo($info) {
+			$this->info = $info;
+		}
+	}
+	
+	$pdf = new MYPDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+	$pdf->SetMargins(10, 20, 10, 20);
+	$pdf->SetAutoPageBreak(true, 20);
+	
+	$pdf->SetCreator('www.ddsmedia.net');
+	$pdf->SetAuthor(SITE_NAME);
+	$pdf->SetTitle(ucfirst($vista));
+	$pdf->SetKeywords('');
+	$pdf->SetFillColor(255, 255, 255);
+	$pdf->SetTextColor(0, 0, 0);
+	
+	$pdf->AddPage();
+
+	$cols = array(
+		array('title' => 'Folio', 'width' => 18, 'align' => 'C'),
+		array('title' => 'Agregada', 'width' => 24, 'align' => 'C'),
+		array('title' => 'Pregunta', 'width' => 95, 'align' => 'L'),
+		array('title' => 'Tipo', 'width' => 30, 'align' => 'C'),
+		array('title' => 'Opciones', 'width' => 85, 'align' => 'L'),
+		array('title' => 'Estatus', 'width' => 25, 'align' => 'C')
+	);
+
+	$lineHeight = 5;
+	$tableBorder = 1;
+
+	$drawHeader = function() use ($pdf, $cols, $tableBorder) {
+		$pdf->SetFillColor(36, 98, 141);
+		$pdf->SetTextColor(255, 255, 255);
+		$pdf->SetFont(PDF_FONT_NAME_MAIN, 'B', 10);
+		foreach($cols as $col) {
+			$pdf->Cell($col['width'], 9, $col['title'], $tableBorder, 0, 'C', 1);
+		}
+		$pdf->Ln();
+		$pdf->SetTextColor(0, 0, 0);
+	};
+
+	$pdf->SetY(10);
+	$pdf->SetFillColor(245, 245, 245);
+	$pdf->SetFont(PDF_FONT_NAME_MAIN, 'B', 14);
+	$pdf->Cell(0, 10, 'REPORTE DE PREGUNTAS', 0, 1, 'C', 1);
+	$pdf->SetFont(PDF_FONT_NAME_MAIN, '', 9);
+	$pdf->Cell(0, 6, 'Generado: '.date('d/m/Y H:i:s'), 0, 1, 'R', 0);
+	$pdf->Ln(2);
+
+	$drawHeader();
+
+	$counter = 0;
+	foreach($preguntas as $pregunta) {
+		$counter++;
+
+		$folio = $pregunta->ID_pregunta;
+		$folio = 'P-'.(strlen($folio)<3? str_pad($folio, 3, '0', STR_PAD_LEFT): $folio);
+		$tipo = $pregunta->tipo==1? 'Abierta': 'Opción múltiple';
+		$estatus = $pregunta->status==1? 'Activo': 'Inactivo';
+
+		$rowData = array(
+			$folio,
+			date('d/m/Y', strtotime($pregunta->fecha)),
+			(string)$pregunta->pregunta,
+			$tipo,
+			(string)$pregunta->opciones,
+			$estatus
+		);
+
+		$maxLines = 1;
+		foreach($rowData as $idx => $value) {
+			$lines = $pdf->getNumLines($value, $cols[$idx]['width']);
+			if($lines > $maxLines) { $maxLines = $lines; }
+		}
+		$rowHeight = $maxLines * $lineHeight;
+
+		$breakLimit = $pdf->getPageHeight() - $pdf->getBreakMargin();
+		if(($pdf->GetY() + $rowHeight) > $breakLimit) {
+			$pdf->AddPage();
+			$drawHeader();
+		}
+
+		if($counter % 2 == 0) { $pdf->SetFillColor(237, 246, 252); }
+		else { $pdf->SetFillColor(255, 255, 255); }
+		$pdf->SetFont(PDF_FONT_NAME_MAIN, '', 9);
+
+		$startX = $pdf->GetX();
+		$startY = $pdf->GetY();
+		foreach($rowData as $idx => $value) {
+			$pdf->MultiCell($cols[$idx]['width'], $rowHeight, $value, $tableBorder, $cols[$idx]['align'], 1, 0, '', '', true, 0, false, true, $rowHeight, 'M');
+		}
+		$pdf->SetXY($startX, $startY + $rowHeight);
+	}
+
+	$pdf->Output('F');
+	exit();
+?>

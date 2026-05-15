@@ -1,0 +1,45 @@
+<?php
+	use PhpOffice\PhpSpreadsheet\Spreadsheet;
+	use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+	$spreadsheet = new Spreadsheet();
+	$sheet = $spreadsheet->getActiveSheet();
+
+	$sheet->setCellValue("A1", 'FOLIO');
+	$sheet->setCellValue("B1", 'CREACION');
+	$sheet->setCellValue("C1", 'ENCUESTA');
+	$sheet->setCellValue("D1", 'URL');
+	$sheet->setCellValue("E1", 'NO. PREGUNTAS');
+	$sheet->setCellValue("F1", 'VECES RESPONDIDO');
+	$sheet->setCellValue("G1", 'ESTATUS');
+	
+	$sheet->getStyle('A1:G1')->getFont()->setBold( true );
+	$sheet->getColumnDimension('A')->setAutoSize(true);
+	$sheet->getColumnDimension('B')->setAutoSize(true);
+	$sheet->getColumnDimension('C')->setAutoSize(true);
+	$sheet->getColumnDimension('D')->setAutoSize(true);
+	$sheet->getColumnDimension('E')->setAutoSize(true);
+	$sheet->getColumnDimension('F')->setAutoSize(true);
+	$sheet->getColumnDimension('G')->setAutoSize(true);
+	$sheet->calculateColumnWidths();
+	$sheet->setTitle('Encuestas');
+
+	$fila = 2;
+	foreach($urls as $url) {
+		$folio = $url->ID_url;
+		$folio = "P-".(strlen($folio)<3? str_pad($folio, 3, '0', STR_PAD_LEFT): $folio);
+		$sheet->setCellValue("A".$fila, $folio);
+		$sheet->setCellValue("B".$fila, date('d/m/Y', strtotime($url->fecha)));
+		$sheet->setCellValue("C".$fila, $url->nombre);
+		$sheet->setCellValue("D".$fila, URL_API."enc/".$url->url);
+		$sheet->setCellValue("E".$fila, $url->num_preguntas);
+		$sheet->setCellValue("F".$fila, $url->num_intentos);
+		$sheet->setCellValue("G".$fila, $url->status==1? 'Activo': 'Inactivo');
+		$fila++;
+	}
+
+	$writer = new Xlsx($spreadsheet);
+	header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+	header("Content-Disposition: attachment; filename=\"Urls_".date('YmdHis').".xlsx\"");
+	$writer->save('php://output');
+?>

@@ -1,0 +1,408 @@
+<?php include 'header.phtml'; ?>
+<div class="row page-titles">
+	<div class="col-md-5 align-self-center">
+		<h3 class="text-themecolor"><i class="fa fa-users"></i> ENCUESTAS</h3>
+	</div>
+</div>
+<div class="container-fluid">
+	<div class="card">
+		<div class="card-body">
+			<div class="table-responsive">
+				<table id="tbl-encuestas" class="table table-hover table-striped"></table>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="frm-encuesta" class="modal fade" data-backdrop="static" data-keyboard="false" tabindex="-1">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content d-flex p-2">
+			<div class="modal-header">
+				<h3 class="modal-title">Informaci&oacute;n de la encuesta</h3>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-group row">
+					<label class="col-sm-2 col-form-label ml-0 font-weight-bold text-left" for="encuesta-nombre">Nombre *</label>
+					<div class="col-sm-5">
+						<input type="text" id="encuesta-nombre" placeholder="Nombre de la encuesta" class="form-control required">
+					</div>
+				</div>
+				<div class="card b-all m-b-15">
+					<div class="card-header link" data-toggle="collapse" data-target="#div-preguntas">
+						<h5 class="m-b-0">
+							Agregar preguntas
+							<i class="mdi mdi-arrow-expand pull-right"></i> 
+						</h5>
+					</div>
+					<div class="card-body collapse show" id="div-preguntas">
+						<div class="form-horizontal">
+							<div class="form-group row">
+								<div class="col-sm-12 table-responsive">
+									<table id="tbl-preguntas" class="table table-hover table-striped w-100 mw-100"></table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="card b-all m-b-15">
+					<div class="card-header link" data-toggle="collapse" data-target="#div-detalle">
+						<h5 class="m-b-0">
+							Preguntas registradas
+							<i class="mdi mdi-arrow-expand pull-right"></i> 
+						</h5>
+					</div>
+					<div class="card-body collapse show" id="div-detalle">
+						<div class="form-horizontal">
+							<div class="form-group row">
+								<div class="col-sm-12 table-responsive">
+									<table id="tbl-detalles" class="table table-hover table-striped">
+										<thead>
+											<tr>
+												<th class="text-center">Folio</th>
+												<th class="text-justify w-75">Pregunta</th>
+												<th class="text-center">Acciones</th>
+											</tr>
+										</thead>
+										<tbody></tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer d-flex">
+				<div class="row mx-0 px-0 col-sm-12">
+					<div class="col-sm-12 mx-0 px-0">
+						<div class="form-group">
+							<div class="pull-right">
+								<input type="hidden" id="encuesta-ID_encuesta" class="data-encuesta" value="0">
+								<button type="button" class="btn btn-inverse waves-effect waves-light m-r-20" data-dismiss="modal">Cancelar</button>
+								<button type="button" class="btn btn-success waves-effect waves-light" id="btnSaveEncuesta">Guardar</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<?php include 'footer.phtml'; ?>
+<script>
+	$(function() {
+		$apiUrl = '<?= URL_API ?>';
+
+		$('#encuesta-nombre').change(function() {
+			$('.invalid-name').remove();
+			$.get($apiUrl+'encuesta/getByNombre/'+$('#encuesta-nombre').val(), function(encuesta) {
+				if(encuesta.result.length > 0) {
+					if(encuesta.result.length>1 || encuesta.result[0].ID_encuesta!=parseInt($('#encuesta-ID_encuesta').val())) {
+						$errLabel = $('<div class="invalid-name">Ya existe una encuesta con el mismo nombre</div>');
+						$('#encuesta-nombre').after($errLabel);
+						$errLabel.show();
+					}
+				}
+			}, 'json');
+		});
+
+		getEncuestas(); function getEncuestas() { cleanTable('tbl-encuestas'); createTable('tbl-encuestas', true); }
+		getPreguntas(); function getPreguntas() { cleanTable('tbl-preguntas'); createTable('tbl-preguntas', true); }
+
+		$('#tbl-preguntas').on('click', '.btnAddPregunta', function(e) { e.preventDefault();
+			row = $(this).parents('tr');
+			id = row.attr('data-id');
+			container = $('#tbl-detalles tbody');
+			if(container.find('tr[data-id="'+id+'"]').length > 0) { swal({ title:"Pregunta duplicado", text:"La pregunta seleccionado ya esta incluida en la encuesta", type:"warning", });
+			} else {
+				blockPage();
+				pregunta = getTrElement('tbl-preguntas', row);
+
+				if(parseInt($('#encuesta-ID_encuesta').val()) == 0) {
+					cleanTable('tbl-detalles');
+					
+					tr = $('<tr data-id="'+id+'"></tr>').appendTo(container);
+					tr.append('<td class="text-center"><small class="folio">'+pregunta.find('.folio').text()+'</small></td>').appendTo(container);
+					tr.append('<td class="text-justify"><small class="pregunta">'+pregunta.find('.pregunta').text()+'</small></td>');
+					tr.append('<td class="text-center"><div class="acciones pull-right"><a href="#" data-popup="tooltip" title="Dar de baja" class="btn btn-xs btn-danger btnDelPregunta"><i class="mdi fa-lg mdi-delete"></i></a></div></td>');
+					
+					createTable('tbl-detalles', false);
+					$.unblockUI();
+				} else {
+					data = { ID_encuesta: $('#encuesta-ID_encuesta').val(), ID_pregunta: id, };
+					$.post($apiUrl+'universo/add/', data, function(universo) {
+						if(universo.response) {
+							cleanTable('tbl-detalles');
+							tr = $('<tr data-id="'+data.ID_pregunta+'"></tr>').appendTo(container);
+							tr.append('<td class="text-center"><small class="folio">'+pregunta.find('.folio').text()+'</small></td>').appendTo(container);
+							tr.append('<td class="text-justify"><small class="pregunta">'+pregunta.find('.pregunta').text()+'</small></td>');
+							tr.append('<td class="text-center"><div class="acciones pull-right"><a href="#" data-popup="tooltip" title="Dar de baja" class="btn btn-xs btn-danger btnDelPregunta"><i class="mdi fa-lg mdi-delete"></i></a></div></td>');
+
+							$('#tbl-encuestas').DataTable().ajax.reload(function(response) { $.unblockUI(); }, false);
+
+						} else { swal({ type: "warning", title: "Oops!", text: universo.message, timer: 4000 }); $.unblockUI(); }
+					}, 'json');
+				}
+			}
+		});
+
+		$('#tbl-detalles').on('click', '.btnDelPregunta', function(e) { e.preventDefault();
+			row = $(this).parents('tr');
+
+			swal({ title:"Eliminar pregunta", text:"Se eliminará la pregunta de la encuesta<br />¿Deseas continuar?", type:"warning", html:true, showCancelButton:true, cancelButtonText:"Cancelar", confirmButtonColor:"#DD6B55", confirmButtonText:"Si, eliminar", closeOnConfirm:true }, function() {
+				blockPage();
+				if(parseInt($('#encuesta-ID_encuesta').val()) == 0) { cleanTable('tbl-detalles'); row.remove(); createTable('tbl-detalles', false); } 
+				else {
+					$.ajax({ url:$apiUrl+'universo/delByEncuesta/'+$('#encuesta-ID_encuesta').val()+'/'+row.attr('data-id'), type:'POST', dataType:'json', success:function(resp) {
+						if(resp.response) {
+							cleanTable('tbl-detalles'); row.remove(); createTable('tbl-detalles', false);
+							swal({ type:"success", title:"¡Listo!", text:"Se eliminó la pregunta satisfactoriamente.", timer:4000 }, function() { $('#tbl-encuestas').DataTable().ajax.reload(function(response) { $.unblockUI(); }, false); });
+						} else { swal({ type:"warning", title:"Oops!", text:resp.message, timer:4000 }); }
+
+						$.unblockUI();
+					}});
+				}
+				$.unblockUI();
+			});
+		});
+
+		$('tbody').on('click', '.btnAlta', function(event) { event.preventDefault();
+			trp = $(this).parents('tr');
+			id = trp.data('id');
+			swal({ title:"Activar encuesta", text:"¿Desea activar la encuesta?", type:"warning", html:true, showCancelButton:true, cancelButtonText:"Cancelar", confirmButtonText:"Si, activar", closeOnConfirm:true }, function() {
+				blockPage();
+				$.ajax({ url: $apiUrl+'encuesta/edit/'+id, type: 'POST', dataType: 'json', data: {status: 1} }).done(function(resp) {
+					if(resp.response) {
+						$('#tbl-encuestas').DataTable().ajax.reload(function(response) { 
+							swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+
+							$.unblockUI(); 
+						}, false);
+					} else { swal({ type: "warning", title: "Oops!", text: resp.message, timer: 4000 }, function() { $.unblockUI(); }); }
+				});
+			});
+		});
+
+		$('tbody').on('click', '.btnBaja', function(event) { event.preventDefault(); blockPage();
+			trp = $(this).parents('tr');
+			id = trp.data('id');
+
+			$.get($apiUrl+'url/getByEncuesta/'+id+'/1', function(urls) { 
+				if(urls.total == 0) {
+					swal({ title:"Inactivar encuesta", text:"¿Desea inactivar la encuesta?<br>Si hay enlaces inactivos de esta encuesta no podrán reactivarse hasta que reactive la encuesta", type:"warning", html:true, showCancelButton:true, cancelButtonText:"Cancelar", confirmButtonText:"Si, inactivar", closeOnConfirm:true }, function(user_response) {
+						if(user_response) {
+							$.ajax({ url: $apiUrl+'encuesta/edit/'+id, type: 'POST', dataType: 'json', data: {status: 2} }).done(function(resp) {
+								if(resp.response) {
+									$('#tbl-encuestas').DataTable().ajax.reload(function(response) { 
+										swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+	
+										$.unblockUI(); 
+									}, false);
+								} else { swal({ type: "warning", title: "Oops!", text: resp.message, timer: 4000 }, function() { $.unblockUI(); }); }
+							});
+						} else { $.unblockUI(); }
+					});
+				} else { swal({ type: "warning", title: "Oops!", text: "Desactiva primero todos los enlaces que usen la encuesta", timer: 4000 }, function() { $.unblockUI(); }); }
+			}, 'json');
+		});
+
+		$('#btnSaveEncuesta').click(function(e) { e.preventDefault();
+			data = { nombre: $.trim($('#encuesta-nombre').val()), detalles: [] };
+
+			$errLabel = $('<div class="invalid-tooltip"></div>');
+			if(data.nombre == '') { $errLabel.html('Debe proporcionar el nombre de la encuesta'); $('#encuesta-nombre').focus().after($errLabel); $errLabel.show(); } 
+			else {
+				$('#toolbar-tbl-detalles #bus').val('').trigger('keyup');
+				$.each($('#tbl-detalles tbody tr'), function(index, tr) { tr = $(tr);
+					if(tr.data('id') != undefined) {
+						data.detalles.push(tr.attr('data-id'));
+					} else { $errLabel.html('No has seleccionado ningúna pregunta'); $('#div-detalle').before($errLabel); $errLabel.show(); $.unblockUI(); }
+				});
+
+				if(data.detalles.length > 0) { blockPage();
+					if(parseInt($('#encuesta-ID_encuesta').val()) == 0) {
+						data.fecha = moment().format('YYYY-MM-DDTHH:mm:ss');
+						data.status = 1;
+						$.post($apiUrl+'encuesta/add/', data, function(encuesta) {
+							if(encuesta.response) {
+								$('#frm-encuesta').modal('hide');
+								cleanTable('tbl-encuestas'); createTable('tbl-encuestas', true);
+								swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+							} else { swal({ type:"error", title:"Oops!", text:encuesta.message, timer:4000 }); }
+
+							$.unblockUI();
+						}, 'json');
+					} else {
+						$.ajax({
+							url:$apiUrl+'encuesta/edit/'+$('#encuesta-ID_encuesta').val(), type:'POST', data:{ nombre:data.nombre }, dataType:'json', success:function(resp) {
+								if(resp.response) {
+									$('#tbl-encuestas').DataTable().ajax.reload(function(response) { 
+										swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+
+										$('#frm-encuesta').modal('hide'); 
+										$.unblockUI(); 
+									}, false);
+								} else { swal({ type:"warning", title:"Oops!", text:resp.message, timer:4000 }, function() { $.unblockUI(); }); }
+							}
+						});
+					}
+				}
+			}
+
+			setTimeout(() => { $('.invalid-tooltip').remove(); }, 3000);
+		});
+
+		$('#frm-encuesta').on('shown.bs.modal', function () {
+			$('#encuesta-nombre').focus();
+			$('.invalid-name').remove();
+		});
+
+		$('#frm-encuesta').on('hidden.bs.modal', function () {
+			$(this).find('#encuesta-nombre').val(undefined);
+		});
+
+		$('#tbl-encuestas').on('click', '.btnEditEncuesta', function(e) { e.preventDefault(); blockPage();
+			container = $('#tbl-detalles tbody');
+			id = $(this).parents('tr').data('id');
+			$.get($apiUrl+'encuesta/get/'+id, function(encuesta) { 
+				if(encuesta.response) {
+					infEncuesta = encuesta.result;
+					$('#encuesta-ID_encuesta').val(infEncuesta.ID_encuesta);
+					$('#encuesta-nombre').val(infEncuesta.nombre);
+
+					cleanTable('tbl-detalles'); container.empty();
+					$.each(encuesta.preguntas, function(index, pregunta) {
+						folio = pregunta.ID_pregunta; folio = "E-"+(folio.length<3? folio.padStart(3, '0'): folio);
+						tr = $('<tr data-id="'+pregunta.ID_pregunta+'"></tr>').appendTo(container);
+						tr.append('<td class="text-center"><small class="folio">'+folio+'</small></td>');
+						tr.append('<td class="text-justify"><small class="pregunta">'+pregunta.pregunta.toUpperCase()+'</small></td>');
+						tr.append('<td><div class="acciones pull-right"><a href="#" data-popup="tooltip" title="Dar de baja" class="btn btn-xs btn-danger btnDelPregunta"><i class="fa fa-lg fa-trash"></i></a></div></td>');
+					});
+
+					createTable('tbl-detalles', false);
+					$('#frm-encuesta').modal('show');
+				}
+
+				$.unblockUI();
+			}, 'json');
+		});
+
+		$('#tbl-encuestas').on('click', '.btnDelEncuesta', function(e) { e.preventDefault(); blockPage();
+			tr = $(this).parents('tr');
+			id = tr.data('id');
+			trInfo = getTrElement('tbl-encuestas', tr);
+
+			$.get($apiUrl+'url/getByEncuesta/'+id+'/1', function(urls) { 
+				if(urls.total == 0) {
+					swal({ title:"Eliminar encuesta", text:"No podrá restaurar la encuesta <strong>"+trInfo.find('.nombre').text().toUpperCase()+"</strong><br>Si hay enlaces inactivos de esta encuesta no podrán volver a ser activados", type:"warning", html:true, showCancelButton:true, cancelButtonText:"Cancelar", confirmButtonColor:"#DD6B55", confirmButtonText:"Si, eliminar", closeOnConfirm:false  }, function(user_response) {
+						if(user_response) {
+							$.ajax({ url:$apiUrl+'encuesta/del/'+tr.attr('data-id'), type:'POST', dataType:'json', success:function(resp) {
+								if(resp.response) {
+									cleanTable('tbl-encuestas'); tr.remove(); createTable('tbl-encuestas', false);
+									swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+								} else { swal({ type:"warning", title:"Oops!", text:resp.message, timer:4000 }); }
+			
+								$.unblockUI();
+							}});
+						} else { $.unblockUI(); }
+					});
+				} else { swal({ type: "warning", title: "Oops!", text: "Desactiva primero todos los enlaces que utilizen esta encuesta", timer: 4000 }, function() { $.unblockUI(); }); }
+			}, 'json');
+		});
+
+		function clearData() {
+			$('.invalid-tooltip').remove();
+			$('#frm-encuesta input').val('');
+			$('#encuesta-ID_encuesta').val(0);
+			cleanTable('tbl-detalles'); $('#tbl-detalles tbody').empty(); createTable('tbl-detalles', false);
+		}
+
+		var temporal = null;
+		function evaluar(tbl, time) {
+			setTimeout(() => {
+				if(time == temporal) {
+					$("#"+tbl+"_filter label input").val($.trim($('#'+tbl+'-bus').val())).trigger('keyup');
+				}
+			}, 1000);
+		}
+
+		function createTable(tbl, paging=true) { blockPage();
+			container = $('<div class="form-inline"></div>');
+
+			
+			if(['tbl-encuestas', 'tbl-preguntas'].includes(tbl)) {
+				searchContainer = $('<div class="input-group"></div>').appendTo(container);
+				search = $('<input type="text" id="'+tbl+'-bus" placeholder="Buscar por nombre" class="form-control">').appendTo(searchContainer);
+
+				if(tbl == 'tbl-encuestas') {
+					url = $apiUrl+'encuesta/getAllDataTables/0/0/_';
+					columnDefs = [
+						{'data': 'ID_encuesta', 'title': 'Folio', 'orderable': true, 'targets': [0], 'className': 'text-center'},
+						{'data': 'fecha', 'title': 'Creación', 'orderable': true, 'targets': [1], 'className': 'text-center'},
+						{'data': 'nombre', 'title': 'Nombre', 'orderable': true, 'targets': [2], 'className': 'text-left w-50 mw-50'},
+						{'data': 'num_preguntas', 'title': 'Num. preguntas', 'orderable': true, 'targets': [3], 'className': 'text-center'},
+						{'data': 'status', 'title': 'Estatus', 'orderable': true, 'targets': [4], 'className': 'text center'},
+						{'data': 'acciones', 'title': '', 'orderable': false, 'targets': [5], 'className': 'text-right'},
+					];
+
+					buttonsContainer = $('<div class="buttons"></div>').appendTo(container);
+					buttonPDF = $('<button type="button" class="btn ml-2 btn-sm btn-inline-block" title="Exportar a PDF" id="btnPDF"><span class="mdi mdi-file-pdf-box fa-2x" style="color: red;"></span></button>').appendTo(buttonsContainer);
+					buttonExcel = $('<button type="button" class="btn btn-sm btn-inline-block" title="Exportar a Excel" id="btnExcel"><span class="mdi mdi-file-excel-box fa-2x" style="color: green;"></span></button>').appendTo(buttonsContainer);
+					buttonAdd = $('<button type="button" class="btn btn-sm btn-inline-block" title="Agregar" id="btnAdd"><span class="mdi mdi-library-plus fa-2x text-success"></span></button>').appendTo(buttonsContainer);
+					$('[data-toggle="tooltip"]').tooltip();
+				} else if(tbl == 'tbl-preguntas') {
+					url = $apiUrl+'pregunta/getAllDataTables/0/0/_/1';
+					columnDefs = [
+						{'data': 'ID_pregunta', 'title': 'Folio', 'orderable': true, 'targets': [0], 'className': 'text-center'},
+						{'data': 'pregunta', 'title': 'Pregunta', 'orderable': true, 'targets': [1], 'className': 'text-left w-75 mw-75'},
+						{'data': 'acciones_encuesta', 'title': '', 'orderable': false, 'targets': [2], 'className': 'text-right'},
+					];
+				}
+
+				var table = $('#'+tbl).dataTable( {
+					scrollX: false,
+					paging: paging,
+					pagingType: "full_numbers",
+					dom: 'Rl<"#toolbar-'+tbl+'">frtip',
+					columnDefs: columnDefs,
+					scrollCollapse: true,
+					order: [[0,'desc']],
+					processing: true,
+					serverSide: true,
+					ajax: {
+						url: url,
+						type: 'GET',
+					},
+					createdRow: function(row, data, dataIndex) {
+						$(row).attr('data-id', data.data_id);
+					},
+					drawCallback: function(settings) {
+						$.unblockUI();
+					}
+				});
+			} else {
+				$('#'+tbl).dataTable({
+					scrollX: false,
+					paging: paging,
+					pagingType: "full_numbers",
+					dom: 'Rl<"#toolbar-'+tbl+'">frtip',
+					order: [[0, 'asc']],
+					drawCallback: function(settings) {
+						$.unblockUI();
+					}
+				});
+			}
+
+			$('#toolbar-'+tbl+'').addClass('form-inline pull-right').html(container.html());
+			$('#'+tbl).parents('.table-responsive').css('overflow', 'visible');
+			$("#"+tbl+"_filter label").hide();
+
+			$(document).find('#'+tbl+'-bus').off('keyup').keyup(function(e) { temporal = moment().format('x')+"-"+Math.random(); evaluar(tbl, temporal); });
+			$(document).find('#'+tbl+'-bus').off('search').on("search", function(evt) { $("#"+tbl+"_filter label input").val(undefined).trigger('keyup'); });
+			$(document).find('#btnAdd').off('click').click(function(e) { e.preventDefault(); clearData(); $('#frm-encuesta').modal('show'); });
+			$(document).find('#btnPDF').off('click').click(function(e) { toSearch = $('#tbl-encuestas-bus').val().length>0? $('#tbl-encuestas-bus').val(): '_'; window.open($apiUrl+'encuesta/export/pdf/'+toSearch); });
+			$(document).find('#btnExcel').off('click').click(function(e) { toSearch = $('#tbl-encuestas-bus').val().length>0? $('#tbl-encuestas-bus').val(): '_'; window.open($apiUrl+'encuesta/export/xlsx/'+toSearch); });
+		}
+	});
+</script>

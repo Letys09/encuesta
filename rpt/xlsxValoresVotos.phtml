@@ -1,0 +1,49 @@
+<?php
+	use PhpOffice\PhpSpreadsheet\Spreadsheet;
+	use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+	use PhpOffice\PhpSpreadsheet\Style\Alignment;
+
+	$spreadsheet = new Spreadsheet();
+	$sheet = $spreadsheet->getActiveSheet();
+	$sheet->setTitle('Valores y votos');
+
+	$valores = isset($valores) && is_array($valores) ? $valores : [];
+	$total_votos = isset($total_votos) ? (int)$total_votos : 0;
+	$desde = isset($desde) ? (string)$desde : '';
+	$hasta = isset($hasta) ? (string)$hasta : '';
+
+	$sheet->mergeCells('A1:D1');
+	$sheet->setCellValue('A1', 'REPORTE DE VOTOS POR VALOR QR');
+	$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(13);
+	$sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+	$sheet->setCellValue('A3', 'CODIGO');
+	$sheet->setCellValue('B3', 'VALOR');
+	$sheet->setCellValue('C3', 'VOTOS');
+	$sheet->setCellValue('D3', 'INVITADOS');
+	$sheet->getStyle('A3:D3')->getFont()->setBold(true);
+
+	$fila = 4;
+	foreach($valores as $v) {
+		$sheet->setCellValue('A'.$fila, $v->codigo);
+		$sheet->setCellValue('B'.$fila, $v->valor);
+		$sheet->setCellValue('C'.$fila, (int)$v->votos);
+		$sheet->setCellValue('D'.$fila, (string)$v->invitados);
+		$fila++;
+	}
+
+	$sheet->setCellValue('B'.$fila, 'TOTAL VOTOS');
+	$sheet->setCellValue('C'.$fila, (int)$total_votos);
+	$sheet->getStyle('B'.$fila.':C'.$fila)->getFont()->setBold(true);
+
+	$sheet->getColumnDimension('A')->setWidth(12);
+	$sheet->getColumnDimension('B')->setWidth(35);
+	$sheet->getColumnDimension('C')->setWidth(12);
+	$sheet->getColumnDimension('D')->setWidth(70);
+
+	$writer = new Xlsx($spreadsheet);
+	header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+	header('Content-Disposition: attachment; filename="ValoresVotos_'.date('YmdHis').'.xlsx"');
+	header('Cache-Control: max-age=0');
+	$writer->save('php://output');
+?>

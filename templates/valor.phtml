@@ -1,0 +1,269 @@
+<?php
+    include 'core/defines.php';
+    $valorNombre = isset($valorNombre) ? $valorNombre : '';
+    $valorId = isset($valorId) ? $valorId : '';
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= htmlspecialchars($valorNombre) ?> | <?= SITE_NAME ?></title>
+    <style>
+        :root {
+            --bg-1: #edf3ff;
+            --bg-2: #dbe9ff;
+            --primary: #0f3d66;
+            --accent: #16a34a;
+            --text: #0b172a;
+            --muted: #4b5563;
+            --surface: rgba(255, 255, 255, 0.84);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at 20% 10%, #f8fbff 0%, var(--bg-1) 42%, var(--bg-2) 100%);
+        }
+
+        .app {
+            width: 100%;
+            min-height: 100vh;
+            padding: 26px 20px 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .step {
+            background: var(--surface);
+            backdrop-filter: blur(2px);
+            border-radius: 24px;
+            padding: 22px 16px;
+            box-shadow: 0 10px 30px rgba(11, 23, 42, 0.12);
+            margin-top: auto;
+            margin-bottom: auto;
+            animation: fade-up 0.35s ease;
+        }
+
+        .title {
+            margin: 0 0 6px;
+            font-size: 26px;
+            color: var(--primary);
+            font-weight: 700;
+            text-align: left;
+        }
+
+        .subtitle {
+            margin: 0 0 18px;
+            color: var(--muted);
+            font-size: 15px;
+            text-align: left;
+        }
+
+        .label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .input {
+            width: 100%;
+            border: 1px solid #c8d6ee;
+            border-radius: 999px;
+            padding: 14px 16px;
+            font-size: 18px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .input:focus {
+            border-color: #6ea8ff;
+            box-shadow: 0 0 0 3px rgba(110, 168, 255, 0.2);
+        }
+
+        .actions {
+            margin-top: 16px;
+        }
+
+        .btn {
+            width: 100%;
+            border: 0;
+            border-radius: 999px;
+            padding: 14px 18px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #fff;
+            background: linear-gradient(90deg, #1b5f97 0%, #0f3d66 100%);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+        }
+
+        .value-box {
+            border-radius: 18px;
+            background: #f6fbff;
+            border: 1px solid #d6e9ff;
+            padding: 20px 14px;
+            margin: 10px 0 14px;
+            text-align: center;
+        }
+
+        .value-label {
+            margin: 0 0 8px;
+            color: var(--muted);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .value {
+            margin: 0;
+            font-size: clamp(28px, 9vw, 46px);
+            color: var(--primary);
+            line-height: 1.05;
+            font-weight: 800;
+        }
+
+        .muted {
+            margin: 0 0 16px;
+            color: var(--muted);
+            font-size: 15px;
+            text-align: left;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes fade-up {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .app {
+                max-width: 440px;
+                margin: 0 auto;
+                padding: 30px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="app">
+        <section id="step-visitor" class="step">
+            <h1 class="title">Bienvenido</h1>
+            <p class="subtitle">Ingresa tu número de invitado para continuar.</p>
+
+            <label class="label" for="visitor-number">Número de invitado</label>
+            <input id="visitor-number" class="input" type="text" inputmode="numeric" placeholder="Ejemplo: 12035">
+
+            <div class="actions">
+                <button id="btn-continue" class="btn" type="button">Continuar</button>
+            </div>
+        </section>
+
+        <section id="step-value" class="step hidden">
+            <div class="value-box">
+                <h2 class="value"><?= htmlspecialchars($valorNombre) ?></h2>
+            </div>
+
+            <div class="value-box hidden" id="containerExiste">
+                <p class="value-label">Ya se ha registrado un voto con este número de invitado</p>
+            </div>
+
+            <button id="btn-vote" class="btn btn-secondary" type="button">Votar</button>
+        </section>
+
+        <section id="step-thanks" class="step hidden">
+            <h2 class="title" style="text-align:center;">Gracias por participar</h2>
+            <p class="subtitle" style="text-align:center; margin-bottom:0;">Tu voto ha sido registrado correctamente.</p>
+        </section>
+    </main>
+
+    <script src="<?= URL_ROOT ?>/assets/js/jquery-3.6.0.min.js"></script>
+    <script>
+        (function() {
+			const $apiUrl = '<?= URL_API ?>';
+			const redirectTarget = 'https://kapital.com/';
+			const redirectFlagKey = 'enc_valor_qr_votado';
+
+            var visitorInput = document.getElementById('visitor-number');
+            var stepVisitor = document.getElementById('step-visitor');
+            var stepValue = document.getElementById('step-value');
+            var stepThanks = document.getElementById('step-thanks');
+            var btnContinue = document.getElementById('btn-continue');
+            var btnVote = document.getElementById('btn-vote');
+            var containerExiste = document.getElementById('containerExiste');
+
+            function goToFinalUrl() {
+                window.location.replace(redirectTarget);
+            }
+
+            window.addEventListener('pageshow', function(event) {
+                var navEntries = performance.getEntriesByType('navigation');
+                var isBackForward = event.persisted || (navEntries.length > 0 && navEntries[0].type === 'back_forward');
+                if(sessionStorage.getItem(redirectFlagKey) === '1' && isBackForward) {
+                    goToFinalUrl();
+                }
+            });
+
+            visitorInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+
+            btnContinue.addEventListener('click', function() {
+                if(visitorInput.value.trim() === '') {
+                    visitorInput.focus();
+                    return;
+                }
+
+                let invitado_id = visitorInput.value.trim();
+                $.get(`${$apiUrl}pregunta/getRegistro/${invitado_id}`, function(resp){
+                    stepVisitor.classList.add('hidden');
+                    stepValue.classList.remove('hidden');
+
+                    if(resp.response) {
+                        containerExiste.classList.remove('hidden');
+                        $('#btn-vote').hide();
+                        return;
+                    }
+
+                    containerExiste.classList.add('hidden');
+                    $('#btn-vote').show();
+                }, 'json');
+            });
+
+            btnVote.addEventListener('click', function() {
+                let invitado_id = visitorInput.value.trim();
+                $.post(`${$apiUrl}respuesta/addResp/`, { enc_valor_qr_id: <?= $valorId ?>, invitado_id: invitado_id }, function(resp){
+                    stepValue.classList.add('hidden');
+                    stepThanks.classList.remove('hidden');
+
+                    sessionStorage.setItem(redirectFlagKey, '1');
+
+                    setTimeout(function() {
+                        goToFinalUrl();
+                    }, 4000);
+                }, 'json');
+            });
+        })();
+    </script>
+</body>
+</html>

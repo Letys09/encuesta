@@ -1,0 +1,153 @@
+				<footer class="footer text-right" style="left: 0;">
+					<span class="pull-left">© <?= date('Y') ?> <?= SITE_NAME ?></span>
+				</footer>
+				
+			</div>
+		</div>
+		<script src="<?=URL_ROOT?>/assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+		<script src="<?=URL_ROOT?>/assets/js/jquery.slimscroll.js"></script>
+		<script src="<?=URL_ROOT?>/assets/plugins/moment/min/moment.min.js"></script>
+		<script src="<?=URL_ROOT?>/assets/js/custom.js"></script>
+		<script src="<?=URL_ROOT?>/assets/plugins/blockUI/jquery.blockUI.js"></script>
+		<script src="<?=URL_ROOT?>/assets/plugins/sweetalert/sweetalert.min.js"></script>
+		<script src="<?=URL_ROOT?>/assets/plugins/inputmask/dist/min/jquery.inputmask.bundle.min.js"></script>
+		<script src="<?=URL_ROOT?>/assets/js/mask.init.js"></script>
+		<script src="<?=URL_ROOT?>/assets/plugins/datatables/jquery.dataTables.min.js"></script>
+		<script src="<?=URL_ROOT?>/assets/plugins/datatables/dataTables.buttons.min.js"></script>
+		<script src="<?=URL_ROOT?>/assets/plugins/datatables/buttons.print.min.js"></script>
+		<script src="<?=URL_ROOT?>/assets/plugins/datatables/jszip.min.js"></script>
+		<script src="<?=URL_ROOT?>/assets/plugins/datatables/pdfmake.min.js"></script>
+		<script src="<?=URL_ROOT?>/assets/plugins/datatables/vfs_fonts.js"></script>
+		<script src="<?=URL_ROOT?>/assets/plugins/datatables/buttons.html5.min.js"></script>
+		<script src="<?=URL_ROOT?>/assets/plugins/select2/dist/js/select2.min.js" type="text/javascript"></script>
+		<script src="<?=URL_ROOT?>/assets/plugins/md5/md5.min.js"></script>
+		<script src="<?=URL_ROOT?>/assets/plugins/bootstrap-select/bootstrap-select.min.js"></script>
+		<script src="<?=URL_ROOT?>/assets/plugins/confirm/js/jquery-confirm.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+		<script>
+			$(function(){
+				$(document).on('focusin', 'input, textarea', function() { $(this).select(); });
+				$(document).on('focus', 'input, textarea', function() { item = $(this); setTimeout(() => { item.select(); }, 100); });
+				$(document).on('mouseleave', '[data-toggle="tooltip"]', function() { $(document).find('.tooltip[role="tooltip"]').remove(); });
+
+				<?php if( $_SESSION['diferencia'] >= 60 ) : ?>
+					$('#form-pass').modal('show');
+
+					$(".toggle-password").click(function () {
+						let input = $(this).closest('.input-group').find("input");
+						if (input.attr("type") === "password") {
+							input.attr("type", "text");
+							$(this).html('<i class="fa fa-eye-slash"></i>');
+						} else {
+							input.attr("type", "password");
+							$(this).html('<i class="fa fa-eye"></i>');
+						}
+					});
+
+					$('#pass-act').on('change', function () {
+						validarPass($.trim($(this).val()), 'pass-act', 'Error. Ingrese su contraseña actual.');
+					});
+
+					$('#pass-new').on('change', function () {
+						let pass = $.trim($(this).val());
+						let regex = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
+						$('.alert').remove();
+
+						if (regex.test(pass)) {
+							validarPass(pass, 'pass-new', 'La nueva contraseña debe ser diferente a la contraseña actual');
+						} else {
+							$('#btnSavePass').attr('disabled', true).prop('disabled', true);
+							mostrarError('pass-new', 'La nueva contraseña debe contener: *Al menos un número, *Al menos una letra y *Mínimo 6 caracteres');
+							$('#pass-new').focus();
+						}
+					});
+
+					$('#pass-new2').on('change', function () {
+						let pass = $.trim($('#pass-new').val());
+						let repeat = $.trim($('#pass-new2').val());
+						$('.alert').remove();
+
+						if (pass !== repeat) {
+							mostrarError('pass-new2', 'Las contraseñas no coinciden');
+							$('#pass-new2').val('').focus();
+						}
+					});
+
+					$('#btnSavePass').on('click', function (e) {
+						e.preventDefault();
+						$('.alert').remove();
+
+						let passActual = $.trim($('#pass-act').val());
+						let passNew = $.trim($('#pass-new').val());
+						let passRepeat = $.trim($('#pass-new2').val());
+
+						if (passActual === '') {
+							mostrarError('pass-act', 'Debe ingresar su contraseña actual.');
+							return;
+						}
+
+						if (!/^(?=.*[A-Za-z])(?=.*\d).{6,}$/.test(passNew)) {
+							mostrarError('pass-new', 'La nueva contraseña debe contener: *Al menos un número, *Al menos una letra y *Mínimo 6 caracteres');
+							return;
+						}
+
+						if (passNew !== passRepeat) {
+							mostrarError('pass-new2', 'Las contraseñas no coinciden');
+							return;
+						}
+
+						// Validar la contraseña actual antes de proceder
+						validarPass(passActual, 'pass-act', 'La contraseña actual es incorrecta', function () {
+							let data = { password: passNew };
+
+							$.post(`<?= URL_ROOT ?>/usuario/change/`, data, function (resp) {
+								if (resp.response) {
+									swal({ type:"success", title:"Listo!", text:'Contraseña actualizada exitosamente', timer:2000 });
+									setTimeout(() => {
+										location.reload();
+									}, 3000);
+								} else {
+									mostrarError('pass-new', 'Error al actualizar la contraseña.');
+								}
+							}, 'json');
+						});
+					});
+
+					function mostrarError(campo, mensaje) {
+						let err = $('<div class="alert alert-danger mt-1 p-1"></div>').text(mensaje);
+						$(`#${campo}`).closest('.input-group').after(err);
+
+						setTimeout(() => {
+							$('.alert').remove();
+						}, 5000);
+					}
+
+					function validarPass(actual, campo, message, callback = null) {
+						$('#btnSavePass').attr('disabled', true).prop('disabled', true);
+						actual = encriptarPassword(actual);
+						$.get(`<?= URL_ROOT ?>/usuario/validar/${actual}`, function (resp) {
+							$('.alert').remove();
+
+							let isValid = (campo === 'pass-act') ? resp.response : !resp.response;
+
+							if (!isValid) {
+								mostrarError(campo, message);
+							} else {
+								$('#btnSavePass').attr('disabled', false).prop('disabled', false);
+								if (callback) callback(); // Ejecutar callback si se proporciona
+							}
+						}, 'json');
+					}
+
+					function encriptarPassword(password) {
+						let sha1Hash = CryptoJS.SHA1(password).toString();						
+						let md5Hash = CryptoJS.MD5(sha1Hash).toString();
+						let reversedHash = md5Hash.split('').reverse().join('');
+						return reversedHash;
+					}
+				<?php endif; ?>
+			});
+		</script>
+	</body>
+</html>
