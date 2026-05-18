@@ -96,6 +96,8 @@
 			if(!isset($parsedBody['opciones'])) { $parsedBody['opciones'] = ''; }
 			if(!isset($parsedBody['escala'])) { $parsedBody['escala'] = ''; }
 			if(!isset($parsedBody['icono'])) { $parsedBody['icono'] = ''; }
+			$votacion_info = !isset($parsedBody['votacion']) ? array() : json_decode($parsedBody['votacion'], true);
+			unset($parsedBody['votacion']);
 
 			if($parsedBody['tipo'] == 2 && (!isset($parsedBody['opciones']) || strlen($parsedBody['opciones'])==0)) {
 				return $response->withJson(['success'=>false, 'message'=>'Debe ingresar las opciones para este tipo de pregunta']);
@@ -127,11 +129,56 @@
 				$parsedBody['icono'] = null;
 			}
 
-			return $response->withHeader('Content-type', 'application/json')->write(json_encode($this->model->pregunta->add($parsedBody)));
+			$votacion = $votacion_info;
+			if($parsedBody['tipo'] == 6 && (!isset($votacion['opciones']) || count($votacion['opciones']) == 0)) {
+				return $response->withJson(['success' => false, 'message' => 'Debe agregar al menos dos opciones para la votación']);
+			}
+
+			$resultado = $this->model->pregunta->add($parsedBody);
+			
+			if($parsedBody['tipo'] == 6 && $resultado->response) {
+				$pregunta_id = $resultado->result;
+				// $imgUrl = '../../public/data/votacion';
+				$imgUrl = 'data/votacion';
+				if(!is_dir($imgUrl) && !mkdir($imgUrl, 0777, true)) {
+					$this->model->transaction->regresaTransaccion();
+					return $response->withJson($response->SetResponse(false, 'No se pudo crear el directorio para guardar imágenes de votación'));
+				}
+
+				$tipo = $votacion['tipo_votacion'];
+				$votacion_opciones = $votacion['opciones'];
+				$arrTxt = [];
+				if($tipo == 1){
+					foreach($votacion_opciones as $i => $opcion) {
+						$arrTxt[] = $opcion['texto'];
+						$imgName = $pregunta_id.'_opcion_'.$i.'.jpg';
+						$imgPath = $imgUrl.'/'.$imgName;
+						$parts = explode(',', $opcion['imagen']);
+						$image_binary = base64_decode($parts[1]);
+						file_put_contents($imgPath, $image_binary);
+					}
+				} else {
+					foreach($votacion_opciones as $i => $opcion) {
+						$arrTxt[] = $opcion['texto'];
+					}
+				}
+
+				$opciones = implode(",", $arrTxt);
+				$editResult = $this->model->pregunta->edit(['tipo_votacion' => $tipo, 'opciones' => $opciones], $pregunta_id);
+				if(!$editResult->response) {
+					$this->model->transaction->regresaTransaccion();
+					return $response->withJson($editResult);
+				}
+			}
+
+			return $response->withJson($resultado);
 		});
 
 		$this->post('edit/{id}', function($request, $response, $arguments) {
 			$parsedBody = $request->getParsedBody();
+			$votacion_info = !isset($parsedBody['votacion']) ? array() : json_decode($parsedBody['votacion'], true);
+			unset($parsedBody['votacion']);
+			$pregunta_id = (int)$arguments['id'];
 
 			if(isset($parsedBody['tipo'])) {
 				if($parsedBody['tipo'] != 3) {
@@ -139,7 +186,83 @@
 					$parsedBody['icono'] = null;
 				}
 
-				if($parsedBody['tipo'] != 2) {
+				if($parsedBody['tipo'] == 2) {
+					$opciones = explode(",", $parsedBody['opciones']);
+					foreach($opciones as &$opcion) {
+						$opcion = trim($opcion);
+						$opcion = mb_strtoupper(mb_substr($opcion, 0, 1), 'UTF-8') . mb_substr($opcion, 1, null, 'UTF-8');
+					}
+					unset($opcion);
+
+					$parsedBody['opciones'] = implode(",", $opciones);
+				} else if($parsedBody['tipo'] == 6) {
+					$votacion = is_array($votacion_info) ? $votacion_info : array();
+					if(!isset($votacion['opciones']) || count($votacion['opciones']) < 2) {
+						return $response->withJson(['response' => false, 'message' => 'Debe agregar al menos dos opciones para la votación']);
+					}
+
+					$tipo_votacion = isset($votacion['tipo_votacion']) ? (int)$votacion['tipo_votacion'] : 1;
+					$votacion_opciones = $votacion['opciones'];
+					$arrTxt = [];
+					$imgUrl = 'data/votacion';
+					$existingImageFiles = glob($imgUrl.'/'.$pregunta_id.'_opcion_*.jpg');
+					if(!is_array($existingImageFiles)) {
+						$existingImageFiles = [];
+					}
+
+					if($tipo_votacion == 1 && !is_dir($imgUrl) && !mkdir($imgUrl, 0777, true)) {
+						return $response->withJson(['response' => false, 'message' => 'No se pudo crear el directorio para guardar imágenes de votación']);
+					}
+
+					foreach($votacion_opciones as $i => $opcion) {
+						$texto = isset($opcion['texto']) ? trim($opcion['texto']) : '';
+						if($texto === '') {
+							return $response->withJson(['response' => false, 'message' => 'Todas las opciones deben tener texto']);
+						}
+
+						$arrTxt[] = $texto;
+
+						if($tipo_votacion == 1) {
+							$imgName = $pregunta_id.'_opcion_'.$i.'.jpg';
+							$imgPath = $imgUrl.'/'.$imgName;
+							$imagen = isset($opcion['imagen']) ? trim($opcion['imagen']) : '';
+							if($imagen === '') {
+								return $response->withJson(['response' => false, 'message' => 'Todas las opciones deben tener una imagen']);
+							}
+
+							if(strpos($imagen, 'data:image') === 0) {
+								$parts = explode(',', $imagen, 2);
+								if(count($parts) < 2) {
+									return $response->withJson(['response' => false, 'message' => 'Formato de imagen inválido']);
+								}
+
+								$image_binary = base64_decode($parts[1]);
+								if($image_binary === false || file_put_contents($imgPath, $image_binary) === false) {
+									return $response->withJson(['response' => false, 'message' => 'No se pudo guardar una imagen de votación']);
+								}
+							}
+						}
+					}
+
+					if($tipo_votacion == 1) {
+						$usedImageIndexes = array_fill(0, count($votacion_opciones), true);
+						foreach($existingImageFiles as $existingImageFile) {
+							if(preg_match('/_opcion_(\d+)\.jpg$/', $existingImageFile, $matches)) {
+								$existingIndex = (int)$matches[1];
+								if(!isset($usedImageIndexes[$existingIndex])) {
+									@unlink($existingImageFile);
+								}
+							}
+						}
+					} else {
+						foreach($existingImageFiles as $existingImageFile) {
+							@unlink($existingImageFile);
+						}
+					}
+
+					$parsedBody['tipo_votacion'] = $tipo_votacion;
+					$parsedBody['opciones'] = implode(',', $arrTxt);
+				} else {
 					$parsedBody['opciones'] = '';
 				}
 			}
