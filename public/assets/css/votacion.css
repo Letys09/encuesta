@@ -1,0 +1,276 @@
+.tipo-votacion-tabs{
+    display: flex;
+    background: #efefef;
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
+    width: 100%;
+}
+
+.tipo-votacion-tabs .tipo-btn{
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 10px 16px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #222;
+    transition: all .2s ease;
+}
+
+.tipo-votacion-tabs .tipo-btn.active{
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+.tipo-votacion-tabs .tipo-btn svg{
+    width: 16px;
+    height: 16px;
+}
+
+.contenedor-votacion{
+    width: 100%;
+}
+
+.contenedor-img{
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;
+}
+
+.contenedor-texto{
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;
+}
+
+/* OPCIONES */
+
+.opcion-img{
+    border: 1px solid #dcdcdc;
+    border-radius: 14px;
+    padding: 10px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #fff;
+}
+
+.numero-opcion{
+    min-width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #efefef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: #333;
+}
+
+.contenido-opcion{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+}
+
+.upload-imagen{
+    width: 45px;
+    height: 45px;
+    border: 2px dashed #d7d7d7;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #777;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: .2s;
+}
+
+.upload-imagen:hover{
+    background: #fafafa;
+    border-color: #bdbdbd;
+}
+
+.texto-opcion{
+    width: 100%;
+}
+
+.input-opcion{
+    width: 100%;
+    border: none;
+    outline: none;
+}
+
+.input-opcion::placeholder{
+    color: #777;
+}
+
+.texto-opcion small{
+    color: #777;
+    font-size: 14px;
+}
+
+/* BOTÓN ELIMINAR OPCIÓN */
+
+.btn-del-opcion{
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: #bbb;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color .15s, background .15s;
+    align-self: center;
+}
+
+.btn-del-opcion:hover{
+    color: #e74c3c;
+    background: #fdecea;
+}
+
+/* BOTÓN */
+
+.btn-agregar-opcion{
+    width: 100%;
+    height: 30px;
+    border: 1px dashed #d8d8d8;
+    border-radius: 12px;
+    background: #fff;
+    font-weight: 600;
+    color: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: .2s;
+}
+
+.btn-agregar-opcion:hover{
+    background: #fafafa;
+}
+
+.btn-agregar-opcion span{
+    font-size: 26px;
+    line-height: 0;
+}
+
+/* PREVIEW */
+
+.preview-votacion{
+    margin-top: 24px;
+    border: 1px solid #dcdcdc;
+    border-radius: 14px;
+    padding: 18px;
+    background: #fff;
+}
+
+.preview-label{
+    font-size: 13px;
+    font-weight: 700;
+    color: #777;
+    letter-spacing: 1px;
+}
+
+.preview-votacion h3{
+    margin-top: 12px;
+    margin-bottom: 18px;
+    font-size: 32px;
+    font-weight: 700;
+    color: #111;
+}
+
+.preview-grid{
+    display: flex;
+    gap: 18px;
+}
+
+.preview-card{
+    width: 170px;
+    border: 1px solid #dfdfdf;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.preview-img{
+    height: 170px;
+    background: #f3f3f3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #c4c4c4;
+}
+
+.preview-text{
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 600;
+    color: #222;
+    background: #fff;
+}
+
+/* --- LISTA ---  */
+.votacion-lista{
+    width:100%;
+}
+
+/* fila */
+.opcion-texto{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:10px;
+}
+
+/* número */
+.numero{
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    background:#111;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+    font-weight:600;
+    flex-shrink:0;
+}
+
+/* input */
+.opcion-texto input{
+    flex:1;
+    height:42px;
+    border:1px solid #d8d8d8;
+    border-radius:8px;
+    padding:0 14px;
+    font-size:15px;
+    outline:none;
+    transition:.2s;
+    background:#fff;
+}
+
+.opcion-texto input:focus{
+    border-color:#999;
+}

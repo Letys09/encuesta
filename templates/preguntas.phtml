@@ -1,4 +1,5 @@
-<?php include 'header.phtml'; ?>
+﻿<?php include 'header.phtml'; ?>
+<link href="<?= URL_ROOT ?>/assets/css/votacion.css" rel="stylesheet">
 <?php if( $_SESSION['diferencia'] >= 60 ) : ?>
 	<?php include 'footer.phtml'; ?>
 <?php else : ?>
@@ -35,7 +36,8 @@
 								<option value="2">Opción múltiple</option>
 								<option value="3">Puntuación</option>
 								<option value="4">Postulación</option>
-								<option value="5" style="display: none;">Votación</option>
+								<option value="5" style="display: none;">Votación Finalistas</option>
+								<option value="6">Votación</option>
 							</select>
 						</div>
 						<div class="form-group row" id="puntuacion-container" style="display: none;">
@@ -64,14 +66,149 @@
 							</div>
 						</div>
 						<div class="form-group">
-							<textarea id="pregunta-pregunta" class="form-control data-pregunta not-empty" cols="30" rows="5" placeholder="Ingresa el contenido de la pregunta"></textarea>
+							<label class="col-form-label ml-0 font-weight-bold text-left" for="pregunta-pregunta">Contenido de la pregunta *</label>
+							<textarea id="pregunta-pregunta" class="form-control data-pregunta not-empty" cols="30" rows="2" placeholder="Ej: ¿Cuál es tu animal favorio?"></textarea>
 						</div>
 						<div class="form-group" id="opciones-container" style="display: none;">
 							<label class="col-form-label ml-0 font-weight-bold text-left" for="pregunta-opciones">Opciones *</label>
 							<textarea id="pregunta-opciones" class="form-control" cols="30" rows="5" placeholder="Ingresa las opciones separadas por comas"></textarea>
 						</div>
+						<div class="form-group" id="votacion-container" style="display: none;">
+							<label class="col-form-label ml-0 font-weight-bold text-left mb-2"> Tipo de votación </label>
+							<div class="tipo-votacion-tabs">
+								<button class="tipo-btn active"
+										id="votacion-imagen"
+										data-toggle="pill"
+										data-target="#data-img"
+										type="button">
+
+									<svg xmlns="http://www.w3.org/2000/svg"
+										width="18"
+										height="18"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round">
+										<rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+										<circle cx="9" cy="9" r="2"></circle>
+										<path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+									</svg>
+
+									Con imágenes
+								</button>
+
+								<button class="tipo-btn"
+										id="votacion-texto"
+										data-toggle="pill"
+										data-target="#data-texto"
+										type="button">
+
+									<svg xmlns="http://www.w3.org/2000/svg"
+										width="18"
+										height="18"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round">
+										<path d="M12 4v16"></path>
+										<path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2"></path>
+										<path d="M9 20h6"></path>
+									</svg>
+
+									Solo texto
+								</button>
+							</div>
+							<div class="tab-content" id="tab-data-content">
+                            	<div class="tab-pane fade show active" id="data-img" role="tabpanel" aria-labelledby="votacion-imagen">
+									<div class="contenedor-img mt-3">
+										<div class="opcion-img">
+											<div class="numero-opcion"> 1 </div>
+											<div class="contenido-opcion">
+												<div class="upload-imagen">
+													<svg xmlns="http://www.w3.org/2000/svg"
+														width="30"
+														height="30"
+														viewBox="0 0 24 24"
+														fill="none"
+														stroke="currentColor"
+														stroke-width="1.8"
+														stroke-linecap="round"
+														stroke-linejoin="round">
+
+														<rect width="18" height="18" x="3" y="3" rx="2"></rect>
+														<circle cx="9" cy="9" r="2"></circle>
+														<path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+														<path d="M19 8v6"></path>
+														<path d="M22 11h-6"></path>
+													</svg>
+												</div>
+
+												<div class="texto-opcion">
+													<input type="text" class="input-opcion" placeholder="Opción 1 (ej: Gatos)">
+													<small>Haz clic en el cuadro para agregar imagen</small>
+												</div>
+											</div>
+										<button class="btn-del-opcion" type="button" title="Eliminar opción">&times;</button>
+										</div>
+
+										<!-- OPCIÓN 2 -->
+										<div class="opcion-img">
+											<div class="numero-opcion"> 2 </div>
+											<div class="contenido-opcion">
+												<div class="upload-imagen">
+													<svg xmlns="http://www.w3.org/2000/svg"
+														width="30"
+														height="30"
+														viewBox="0 0 24 24"
+														fill="none"
+														stroke="currentColor"
+														stroke-width="1.8"
+														stroke-linecap="round"
+														stroke-linejoin="round">
+
+														<rect width="18" height="18" x="3" y="3" rx="2"></rect>
+														<circle cx="9" cy="9" r="2"></circle>
+														<path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+														<path d="M19 8v6"></path>
+														<path d="M22 11h-6"></path>
+													</svg>
+												</div>
+
+												<div class="texto-opcion">
+													<input type="text" class="input-opcion" placeholder="Opción 2 (ej: Gatos)">
+													<small>Haz clic en el cuadro para agregar imagen</small>
+												</div>
+											</div>
+											<button class="btn-del-opcion" type="button" title="Eliminar opción">&times;</button>
+										</div>											
+									</div>
+									<button class="btn-agregar-opcion" id="addOpImg"><span>+</span> Agregar opción </button>
+								</div>
+                            	<div class="tab-pane fade" id="data-texto" role="tabpanel" aria-labelledby="votacion-texto">
+									<div class="contenedor-texto mt-3">
+										<!-- Opción -->
+										<div class="opcion-texto">
+											<span class="numero">1</span>
+											<input type="text" placeholder="Escribir opción 1..." />
+										</div>
+
+										<div class="opcion-texto">
+											<span class="numero">2</span>
+											<input type="text" placeholder="Escribir opción 2..." />
+										</div>
+
+									</div>
+									<button class="btn-agregar-opcion" id="addOpTexto"><span>+</span> Agregar opción</button>
+								</div>
+							</div>
+						</div>
 					</div>
 					<div class="modal-footer d-flex justify-content-end">
+						<input type="file" id="input-opcion-img" accept="image/*" style="display: none;">
 						<input type="hidden" id="pregunta-ID_pregunta" value="0">
 						<button type="button" class="btn btn-inverse waves-effect waves-light m-r-20" data-dismiss="modal">Cancelar</button>
 						<button type="button" class="btn btn-success waves-effect waves-light" id="btnSavePregunta">Guardar</button>
@@ -138,6 +275,7 @@
 	<script>
 		$(function() {
 			$apiUrl = '<?= URL_API ?>';
+			$rootUrl = '<?= rtrim(URL_ROOT, '/') ?>';
 			var qrValues = [];
 			var qrMaxValues = 14;
 
@@ -164,6 +302,200 @@
 
 				return result;
 			}
+
+			// Manejar tabs de votación manualmente
+			$(document).on('click', '.tipo-votacion-tabs .tipo-btn', function(e) {
+				e.preventDefault();
+				activateVotacionTab($(this).data('target'));
+			});
+
+			function activateVotacionTab(target) {
+				$('.tipo-votacion-tabs .tipo-btn').removeClass('active');
+				$('.tipo-votacion-tabs .tipo-btn[data-target="'+target+'"]').addClass('active');
+				$('#votacion-container .tab-pane').removeClass('active show');
+				$(target).addClass('active show');
+				updateContenedorImgMaxHeight('contenedor-img', 'opcion-img');
+				updateContenedorImgMaxHeight('contenedor-texto', 'opcion-texto');
+				updateDelBtns('.contenedor-img', '.opcion-img');
+				updateDelBtns('.contenedor-texto', '.opcion-texto');
+			}
+
+			function getImageOptionTemplate(index, text, imageSrc) {
+				var imageHtml = imageSrc ? '<img src="'+imageSrc+'" alt="Opción" class="img-fluid" style="max-width: 100%;">' : '';
+				return `
+					<div class="opcion-img">
+						<div class="numero-opcion"> ${index} </div>
+						<div class="contenido-opcion">
+							<div class="upload-imagen">
+								<svg xmlns="http://www.w3.org/2000/svg"
+									width="30"
+									height="30"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="1.8"
+									stroke-linecap="round"
+									stroke-linejoin="round">
+
+									<rect width="18" height="18" x="3" y="3" rx="2"></rect>
+									<circle cx="9" cy="9" r="2"></circle>
+									<path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+									<path d="M19 8v6"></path>
+									<path d="M22 11h-6"></path>
+								</svg>
+								${imageHtml}
+							</div>
+
+							<div class="texto-opcion">
+								<input type="text" class="input-opcion" placeholder="Opción ${index} (ej: Gatos)" value="${text || ''}">
+								<small>Haz clic en el cuadro para agregar imagen</small>
+							</div>
+						</div>
+						<button class="btn-del-opcion" type="button" title="Eliminar opción">&times;</button>
+					</div>
+				`;
+			}
+
+			function getTextOptionTemplate(index, text) {
+				return `
+					<div class="opcion-texto">
+						<span class="numero">${index}</span>
+						<input type="text" placeholder="Escribir opción ${index}..." value="${text || ''}" />
+						<button class="btn-del-opcion" type="button" title="Eliminar opción">&times;</button>
+					</div>
+				`;
+			}
+
+			function parseVotingOptions(csv) {
+				if(!csv) {
+					return [];
+				}
+
+				return csv.split(',').map(function(option) {
+					return $.trim(option);
+				}).filter(function(option) {
+					return option.length > 0;
+				});
+			}
+
+			function resetVotacionInputs() {
+				$('.contenedor-img').html(getImageOptionTemplate(1, '', '') + getImageOptionTemplate(2, '', ''));
+				$('.contenedor-texto').html(getTextOptionTemplate(1, '') + getTextOptionTemplate(2, ''));
+				activateVotacionTab('#data-img');
+			}
+
+			function populateVotacionEditData(pregunta) {
+				var options = parseVotingOptions(pregunta.opciones);
+				if(options.length < 2) {
+					options = ['', ''];
+				}
+
+				var tipoVotacion = parseInt(pregunta.tipo_votacion || 1);
+				if(tipoVotacion === 1) {
+					var imageRows = '';
+					$.each(options, function(i, text) {
+						var imageUrl = $rootUrl + '/data/votacion/' + pregunta.ID_pregunta + '_opcion_' + i + '.jpg?t=' + new Date().getTime();
+						imageRows += getImageOptionTemplate(i + 1, text, imageUrl);
+					});
+					$('.contenedor-img').html(imageRows);
+					activateVotacionTab('#data-img');
+				} else {
+					var textRows = '';
+					$.each(options, function(i, text) {
+						textRows += getTextOptionTemplate(i + 1, text);
+					});
+					$('.contenedor-texto').html(textRows);
+					activateVotacionTab('#data-texto');
+				}
+			}
+
+			function updateContenedorImgMaxHeight(containerSelector, itemSelector) {
+				if(!containerSelector || !itemSelector) {
+					return;
+				}
+
+				var normalizedContainerSelector = /^[.#]/.test(containerSelector) ? containerSelector : '.' + containerSelector;
+				var normalizedItemSelector = /^[.#]/.test(itemSelector) ? itemSelector : '.' + itemSelector;
+				var container = $(normalizedContainerSelector);
+				if(!container.length) {
+					return;
+				}
+
+				var items = container.find(normalizedItemSelector);
+				if(items.length <= 5) {
+					container.css('max-height', 'none');
+					return;
+				}
+
+				var maxHeight = 0;
+				items.slice(0, 5).each(function() {
+					maxHeight += $(this).outerHeight(true);
+				});
+
+				container.css('max-height', Math.ceil(maxHeight) + 'px');
+			}
+
+			function updateDelBtns(containerSelector, itemSelector) {
+				var items = $(containerSelector).find(itemSelector);
+				var show = items.length > 2;
+				items.find('.btn-del-opcion').toggle(show);
+			}
+
+			$('body').on('click', '.btn-del-opcion', function() {
+				var item = $(this).closest('.opcion-img, .opcion-texto');
+				var container = item.parent();
+				var itemClass = item.hasClass('opcion-img') ? '.opcion-img' : '.opcion-texto';
+				if(container.find(itemClass).length <= 2) {
+					return;
+				}
+				item.remove();
+				container.find(itemClass).each(function(i) {
+					$(this).find('.numero-opcion, .numero').text(i + 1);
+					if(itemClass === '.opcion-img') {
+						$(this).find('.input-opcion').attr('placeholder', 'Opción ' + (i + 1) + ' (ej: Gatos)');
+					} else {
+						$(this).find('input').attr('placeholder', 'Escribir opción ' + (i + 1) + '...');
+					}
+				});
+				updateDelBtns(container, itemClass);
+				updateContenedorImgMaxHeight(container.attr('class').split(' ')[0], itemClass.replace('.', ''));
+			});
+
+			$('body').on('click', '.upload-imagen', function() {
+				console.log('imagen editar click');
+				$('#input-opcion-img').data('target', $(this)).click();
+			});
+
+			$('body').on('change', '#input-opcion-img', function() {
+				var file = this.files[0];
+				var target = $(this).data('target');
+				if(file && target) {
+					var reader = new FileReader();
+					reader.onload = function(e) {
+						target.find('img').remove();
+						target.append('<img src="'+e.target.result+'" alt="Opción" class="img-fluid" style="max-width: 100%;">');
+					}
+					reader.readAsDataURL(file);
+				}
+			});
+
+			$('body').on('click', '#addOpImg', function() {
+				var container = $('.contenedor-img');
+				var count = container.find('.opcion-img').length + 1;
+
+				container.append(getImageOptionTemplate(count, '', ''));
+				updateDelBtns('.contenedor-img', '.opcion-img');
+				updateContenedorImgMaxHeight('contenedor-img', 'opcion-img');
+			});
+
+			$('body').on('click', '#addOpTexto', function() {
+				var container = $('.contenedor-texto');
+				var count = container.find('.opcion-texto').length + 1;
+
+				container.append(getTextOptionTemplate(count, ''));
+				updateDelBtns('.contenedor-texto', '.opcion-texto');
+				updateContenedorImgMaxHeight('contenedor-texto', 'opcion-texto');
+			});
 
 			function updateCounter() {
 				var count = parseInputValues().length;
@@ -336,23 +668,35 @@
 			});
 
 			$('#pregunta-tipo').change(function() {
-				if($(this).val() == 2) { $('#opciones-container').show(); $('#puntuacion-container').hide(); $('#puntuacion-select').val('1-5'); }
-				else if($(this).val() == 3) { 
+				$('#opciones-container').hide();
+				$('#puntuacion-container').hide();
+				$('#votacion-container').hide();
+
+				if($(this).val() == 2) {
+					$('#opciones-container').show();
+					$('#puntuacion-select').val('1-5');
+				} else if($(this).val() == 3) { 
 					$('#opciones-container').hide(); $('#pregunta-opciones').val('');
 					$('#puntuacion-select').val('0');
 					$('#pregunta-emoji').val('');
 					$('#puntuacion-texto').empty().append('<option value="" selected disabled>-- Selecciona --</option>');
 					$('#puntuacion-container').show();
 					setPreguntaTextReadonly(false);
-				}
-				else {
+				} else if($(this).val() == 4) {
 					$('#opciones-container').hide();
 					$('#pregunta-opciones').val('');
 					$('#puntuacion-container').hide();
 					$('#puntuacion-select').val('');
 					$('#puntuacion-texto').empty().append('<option value="" selected disabled>-- Selecciona --</option>');
 					setPreguntaTextReadonly(false);
+				} else if($(this).val() == 6) {
+					$('#votacion-container').show();
+					if($('.contenedor-img .opcion-img').length === 0 || $('.contenedor-texto .opcion-texto').length === 0) {
+						resetVotacionInputs();
+					}
 				}
+
+				$('#pregunta-pregunta').val('');
 				$('.invalid-tooltip').remove();
 			});
 
@@ -452,9 +796,19 @@
 				$('#pregunta-tipo option[value="5"]').hide();
 				$('#frm-pregunta textarea').val('');
 				$('#puntuacion-texto').empty().append('<option value="" selected disabled>-- Selecciona --</option>');
-				setPreguntaTextReadonly(false);
 				$('#pregunta-ID_pregunta').val(0);
 				$('#pregunta-tipo').val(1).trigger('change');
+				$('#frm-pregunta .validation-error-label').remove();
+				$('.invalid-tooltip').remove();
+				$('#pregunta-pregunta').val('');
+				$('#pregunta-opciones').val('');
+				$('#puntuacion-select').val('0');
+				$('#pregunta-emoji').val('');
+				$('#puntuacion-container').hide();
+				$('#opciones-container').hide();
+				$('#votacion-container').hide();
+				resetVotacionInputs();
+				setPreguntaTextReadonly(false);
 			}
 
 			$('tbody').on('click', '.btnEditPregunta', function(event) { event.preventDefault(); blockPage();
@@ -483,6 +837,9 @@
 						$('#pregunta-tipo option[value="5"]').show().val(5);
 						$('#pregunta-tipo').attr('disabled', true).prop('disabled', true);
 						$('#opciones-container').hide();
+					} else if(data.result.tipo == 6) {
+						$('#votacion-container').show();
+						populateVotacionEditData(data.result);
 					}else { 
 						$('#opciones-container').hide(); 
 						$('#pregunta-opciones').val('');
@@ -497,7 +854,13 @@
 				}, 'json');
 			});
 
-			$('#frm-pregunta').on('shown.bs.modal', function () { $('#pregunta-pregunta').focus(); });
+			$('#frm-pregunta').on('shown.bs.modal', function () {
+				$('#pregunta-pregunta').focus();
+				updateContenedorImgMaxHeight('contenedor-img', 'opcion-img');
+				updateContenedorImgMaxHeight('contenedor-texto', 'opcion-texto');
+				updateDelBtns('.contenedor-img', '.opcion-img');
+				updateDelBtns('.contenedor-texto', '.opcion-texto');
+			});
 
 			$('#btnSavePregunta').click(function() {
 				$('.invalid-tooltip').remove();
@@ -507,7 +870,8 @@
 					tipo: $('#pregunta-tipo').val(), 
 					opciones: $('#pregunta-opciones').val(),
 					escala: $('#puntuacion-select').val(),
-					icono: $('#puntuacion-container').is(':visible') ? $('#pregunta-emoji').val() : ''
+					icono: $('#puntuacion-container').is(':visible') ? $('#pregunta-emoji').val() : '',
+					votacion: {}
 				};
 
 				var hasError = false;
@@ -517,6 +881,7 @@
 					$errLabel.html('Debe ingresar el contenido de la pregunta');
 					$('#pregunta-pregunta').after($errLabel);
 					$errLabel.show();
+					return;
 				}
 
 				if(data.tipo == '2' && data.opciones == '') {
@@ -524,18 +889,38 @@
 					$errLabel.html('Debe ingresar las opciones de la pregunta');
 					$('#pregunta-opciones').after($errLabel);
 					$errLabel.show();
+					return;
 				}
 
 				if(data.tipo == '3') {
 					if(!data.escala || data.escala == '0') {
 						hasError = true;
 						$('#puntuacion-select').after('<div class="invalid-tooltip">Debe seleccionar una escala</div>');
+						return;
 					}
 
 					if(!data.icono) {
 						hasError = true;
 						$('#pregunta-emoji').after('<div class="invalid-tooltip">Debe seleccionar un icono</div>');
+						return;
 					}
+				}
+
+				if(data.tipo == '6'){
+					var votacionData = getVotacionData();
+					if(votacionData.error) {
+						$('#votacion-container').after('<div class="invalid-tooltip">' + votacionData.error + '</div>');
+						$('.invalid-tooltip').show();
+						limpiar();
+						return;
+					}
+					if(votacionData.opciones.length < 2) {
+						$('#votacion-container').after('<div class="invalid-tooltip">Debe agregar al menos 2 opciones para la votación</div>');
+						$('.invalid-tooltip').show();
+						limpiar();
+						return;
+					}
+					data.votacion = JSON.stringify(votacionData);
 				}
 
 				if(hasError) {
@@ -544,22 +929,23 @@
 					return;
 				}
 
+				console.log(data);
 				blockPage();
 				if(id == 0) {
-						data.status = 1;
-						data.fecha = moment().format('YYYY-MM-DDTHH:mm:ss');
-						$.post(`${$apiUrl}pregunta/add/`, data, function(resp) {
-							if(resp.response) {
-								data.ID_pregunta = resp.result;
-								cleanTable('tbl-preguntas');  createTable('tbl-preguntas', true);
-								$('#pregunta-ID_pregunta').val(0);
+					data.status = 1;
+					data.fecha = moment().format('YYYY-MM-DDTHH:mm:ss');
+					$.post(`${$apiUrl}pregunta/add/`, data, function(resp) {
+						if(resp.response) {
+							data.ID_pregunta = resp.result;
+							cleanTable('tbl-preguntas');  createTable('tbl-preguntas', true);
+							$('#pregunta-ID_pregunta').val(0);
 
-								$('#frm-pregunta').modal('hide');
-								swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
-							} else { swal({ type:"warning", title:"Oops!", text:resp.message, timer:4000 }); }
+							$('#frm-pregunta').modal('hide');
+							swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+						} else { swal({ type:"warning", title:"Oops!", text:resp.message, timer:4000 }); }
 
-							$.unblockUI();
-						}, 'json');
+						$.unblockUI();
+					}, 'json');
 				} else {
 					$.ajax({ url:$apiUrl+'pregunta/edit/'+id, type:'POST', dataType:'json', data:data }).done(function(resp) {
 						if(resp.response) {
@@ -687,6 +1073,47 @@
 				setTimeout(() => {
 					$('.invalid-tooltip').remove();
 				}, 3000);
+			}
+
+			function getVotacionData(){
+				var data = {
+					tipo_votacion: '',
+					opciones: [],
+					error: null
+				};
+
+				if($('body #data-img').is(':visible')) {
+					data.tipo_votacion = 1;
+					var valid = true;
+					$('.contenedor-img .opcion-img').each(function() {
+						var texto = $.trim($(this).find('.texto-opcion .input-opcion').val());
+						var src = $(this).find('.upload-imagen img').attr('src');
+						if(!texto) {
+							data.error = 'Todas las opciones deben tener texto';
+							valid = false;
+							return false;
+						}
+						if(!src) {
+							data.error = 'Todas las opciones deben tener una imagen';
+							valid = false;
+							return false;
+						}
+						data.opciones.push({texto: texto, imagen: src});
+					});
+					if(!valid) {
+						data.opciones = [];
+					}
+				} else if($('body #data-texto').is(':visible')) {
+					data.tipo_votacion = 2;
+					$('.contenedor-texto .opcion-texto').each(function() {
+						var valor = $.trim($(this).find('input').val());
+						if(valor) {
+							data.opciones.push({texto: valor});
+						}
+					});
+				}
+
+				return data;
 			}
 
 			function createTable(tbl, paging=true) { blockPage();

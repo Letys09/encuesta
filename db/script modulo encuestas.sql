@@ -103,3 +103,5 @@ CREATE TABLE enc_votacion_postulacion (
 	CONSTRAINT fk_vp_postulacion FOREIGN KEY (ID_pregunta_postulacion) REFERENCES enc_pregunta(ID_pregunta),
 	CONSTRAINT fk_vp_votacion FOREIGN KEY (ID_pregunta_votacion) REFERENCES enc_pregunta(ID_pregunta)
 );
+
+ALTER TABLE `enc_pregunta` ADD `tipo_votacion` TINYINT(1) NULL AFTER `tipo`;

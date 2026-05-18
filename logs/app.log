@@ -38268,3 +38268,131 @@ c0"}
 [2026-05-15 12:09:48] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"717aa88"}
 [2026-05-15 12:09:53] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"9ab5d4d"}
 [2026-05-15 12:10:46] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"794f618"}
+[2026-05-15 12:24:32] slim-app.INFO: Slim-Skeleton '/' login [] {"uid":"3edbf41"}
+[2026-05-15 12:24:36] slim-app.INFO: Slim-Skeleton 'usuario/login/' 1 [] {"uid":"0926c83"}
+[2026-05-15 12:24:36] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"3859c9a"}
+[2026-05-15 12:30:51] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"31e6be3"}
+[2026-05-15 12:43:52] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"fec33bf"}
+[2026-05-15 12:45:25] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"09bc406"}
+[2026-05-15 12:47:52] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"3c5860a"}
+[2026-05-15 12:48:07] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"cc97c67"}
+[2026-05-15 12:49:50] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"9a0496c"}
+[2026-05-15 12:55:27] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"fbd5a22"}
+[2026-05-15 12:57:41] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"a598fe1"}
+[2026-05-15 12:57:43] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"4b49c95"}
+[2026-05-15 13:02:31] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"0dfdaa9"}
+[2026-05-15 13:03:10] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"69028f2"}
+[2026-05-15 13:09:32] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"2ec36f9"}
+[2026-05-15 13:12:14] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"44d2235"}
+[2026-05-15 13:13:11] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"efb28f1"}
+[2026-05-15 13:15:11] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"088a8fe"}
+[2026-05-15 13:15:46] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"41c1891"}
+[2026-05-15 13:16:22] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"dc341a4"}
+[2026-05-15 13:18:05] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"f5d36f2"}
+[2026-05-15 13:23:51] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"f3d7dc1"}
+[2026-05-15 13:25:14] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"00f5dc5"}
+[2026-05-15 13:25:56] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"1888a05"}
+[2026-05-15 13:28:13] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"8126b9d"}
+[2026-05-15 13:28:29] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"91ba45b"}
+[2026-05-15 13:28:31] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"da75aca"}
+[2026-05-15 13:29:15] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"3c397c4"}
+[2026-05-15 13:29:51] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"dce2459"}
+[2026-05-15 13:30:00] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"fc9cde6"}
+[2026-05-15 13:31:28] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"8572979"}
+[2026-05-15 13:33:03] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"197ce04"}
+[2026-05-15 13:33:15] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"a968a58"}
+[2026-05-15 13:36:12] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"3e9323e"}
+[2026-05-15 13:48:09] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"1bcbee6"}
+[2026-05-15 13:51:41] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"b109182"}
+[2026-05-15 13:59:02] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"44182d8"}
+[2026-05-15 14:00:45] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"027d9cd"}
+[2026-05-15 14:00:47] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"60f9294"}
+[2026-05-15 14:01:00] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"b0b1e47"}
+[2026-05-15 14:01:58] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"cf343d0"}
+[2026-05-15 14:02:26] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"82160e0"}
+[2026-05-15 14:08:35] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"61b80e8"}
+[2026-05-15 14:08:37] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"f5c17dc"}
+[2026-05-15 14:13:13] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"6e5a988"}
+[2026-05-15 14:16:31] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"c079e6f"}
+[2026-05-15 14:16:41] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"b63423f"}
+[2026-05-15 14:17:28] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"f3b99d1"}
+[2026-05-15 14:17:50] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"609a45f"}
+[2026-05-15 14:18:22] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"28d0d61"}
+[2026-05-15 14:18:24] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"2f19102"}
+[2026-05-15 14:18:37] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"98cafc7"}
+[2026-05-15 14:18:38] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"5f42bb6"}
+[2026-05-15 14:19:26] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"3d5cbf4"}
+[2026-05-15 14:19:55] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"0bbdf54"}
+[2026-05-15 14:20:52] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"165a540"}
+[2026-05-15 14:22:23] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"17c3a62"}
+[2026-05-15 14:22:24] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"ca59aa2"}
+[2026-05-15 14:24:02] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"7ebf685"}
+[2026-05-15 14:25:03] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"a56d668"}
+[2026-05-15 14:26:34] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"7f722d7"}
+[2026-05-15 14:26:35] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"501353a"}
+[2026-05-15 14:27:53] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"a8b66f0"}
+[2026-05-15 14:38:44] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"eeb4672"}
+[2026-05-15 14:45:40] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"42a4ccf"}
+[2026-05-15 14:47:11] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"7cb7d2a"}
+[2026-05-15 14:47:26] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"504b637"}
+[2026-05-15 14:48:41] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"19920c6"}
+[2026-05-15 14:50:17] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"3f3c68a"}
+[2026-05-15 14:52:00] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"7d4e188"}
+[2026-05-15 14:55:33] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"87f0576"}
+[2026-05-15 14:55:38] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"83fbbe6"}
+[2026-05-15 15:01:47] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"7a374b4"}
+[2026-05-15 15:03:23] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"64ab0fc"}
+[2026-05-15 15:03:25] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"71f6fc4"}
+[2026-05-15 17:50:00] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"7c35f28"}
+[2026-05-15 17:51:36] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"9a0253f"}
+[2026-05-15 17:52:16] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"ab52835"}
+[2026-05-15 18:07:13] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"f495aea"}
+[2026-05-15 18:07:37] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"d1bd213"}
+[2026-05-15 18:24:00] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"bb96b07"}
+[2026-05-15 18:27:30] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"3a2960d"}
+[2026-05-15 18:27:31] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"884ee1e"}
+[2026-05-15 18:29:05] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"d412626"}
+[2026-05-15 18:35:21] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"ec7c5ba"}
+[2026-05-15 18:45:34] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"9a1e0e1"}
+[2026-05-15 18:49:27] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"f655cd2"}
+[2026-05-15 18:51:39] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"91846f9"}
+[2026-05-15 18:51:50] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"d68626d"}
+[2026-05-15 18:52:48] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"ecafad4"}
+[2026-05-15 18:57:14] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"c4a6c1a"}
+[2026-05-15 18:59:23] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"bd602b1"}
+[2026-05-15 19:01:36] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"723186c"}
+[2026-05-15 19:03:26] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"87c610e"}
+[2026-05-15 19:03:27] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"3f240a8"}
+[2026-05-15 19:05:11] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"74ce6e8"}
+[2026-05-18 10:23:59] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"5752f9d"}
+[2026-05-18 11:44:47] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"9f0edef"}
+[2026-05-18 11:52:00] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"ed2326b"}
+[2026-05-18 12:25:36] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"5dd855d"}
+[2026-05-18 12:28:08] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"f6d0304"}
+[2026-05-18 12:29:25] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"ba3c84d"}
+[2026-05-18 12:29:43] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"5c07b98"}
+[2026-05-18 12:30:23] slim-app.INFO: Slim-Skeleton '/' preguntas [] {"uid":"415445c"}
+[2026-05-18 13:24:05] slim-app.INFO: Slim-Skeleton '/' enlaces [] {"uid":"6b453c4"}
+[2026-05-18 13:24:07] slim-app.INFO: Slim-Skeleton '/' encuestas [] {"uid":"058a625"}
+[2026-05-18 13:24:24] slim-app.INFO: Slim-Skeleton '/' enlaces [] {"uid":"a757eee"}
+[2026-05-18 13:24:44] slim-app.INFO: Slim-Skeleton '/' Encuesta Nl8yMDI2LTA1LTE4IDEyOjI0OjMx [] {"uid":"ee9a8fc"}
+[2026-05-18 13:31:30] slim-app.INFO: Slim-Skeleton '/' Encuesta Nl8yMDI2LTA1LTE4IDEyOjI0OjMx [] {"uid":"6ed05a5"}
+[2026-05-18 13:32:39] slim-app.INFO: Slim-Skeleton '/' Encuesta Nl8yMDI2LTA1LTE4IDEyOjI0OjMx [] {"uid":"6bc2bf3"}
+[2026-05-18 13:40:07] slim-app.INFO: Slim-Skeleton '/' Encuesta Nl8yMDI2LTA1LTE4IDEyOjI0OjMx [] {"uid":"89e66e6"}
+[2026-05-18 13:42:47] slim-app.INFO: Slim-Skeleton '/' Encuesta Nl8yMDI2LTA1LTE4IDEyOjI0OjMx [] {"uid":"c27fb2e"}
+[2026-05-18 13:45:36] slim-app.INFO: Slim-Skeleton '/' Encuesta Nl8yMDI2LTA1LTE4IDEyOjI0OjMx [] {"uid":"8f2cfb1"}
+[2026-05-18 13:46:44] slim-app.INFO: Slim-Skeleton '/' Encuesta Nl8yMDI2LTA1LTE4IDEyOjI0OjMx [] {"uid":"990788c"}
+[2026-05-18 13:47:21] slim-app.INFO: Slim-Skeleton '/' Encuesta Nl8yMDI2LTA1LTE4IDEyOjI0OjMx [] {"uid":"1dc7d00"}
+[2026-05-18 13:47:22] slim-app.INFO: Slim-Skeleton '/' Encuesta Nl8yMDI2LTA1LTE4IDEyOjI0OjMx [] {"uid":"45e75fd"}
+[2026-05-18 13:48:18] slim-app.INFO: Slim-Skeleton '/' encuestas [] {"uid":"9d1957c"}
+[2026-05-18 13:48:37] slim-app.INFO: Slim-Skeleton '/' enlaces [] {"uid":"e474fb6"}
+[2026-05-18 13:48:51] slim-app.INFO: Slim-Skeleton '/' Encuesta N18yMDI2LTA1LTE4IDEyOjQ4OjQ0 [] {"uid":"f073d2c"}
+[2026-05-18 13:49:51] slim-app.INFO: Slim-Skeleton '/' Encuesta N18yMDI2LTA1LTE4IDEyOjQ4OjQ0 [] {"uid":"276f719"}
+[2026-05-18 13:54:53] slim-app.INFO: Slim-Skeleton '/' Encuesta N18yMDI2LTA1LTE4IDEyOjQ4OjQ0 [] {"uid":"28df24e"}
+[2026-05-18 13:55:08] slim-app.INFO: Slim-Skeleton '/' Encuesta N18yMDI2LTA1LTE4IDEyOjQ4OjQ0 [] {"uid":"23c1e31"}
+[2026-05-18 13:55:10] slim-app.INFO: Slim-Skeleton '/' Encuesta N18yMDI2LTA1LTE4IDEyOjQ4OjQ0 [] {"uid":"07e9954"}
+[2026-05-18 13:55:11] slim-app.INFO: Slim-Skeleton '/' Encuesta N18yMDI2LTA1LTE4IDEyOjQ4OjQ0 [] {"uid":"4b9719b"}
+[2026-05-18 13:57:01] slim-app.INFO: Slim-Skeleton '/' Encuesta N18yMDI2LTA1LTE4IDEyOjQ4OjQ0 [] {"uid":"e5938c8"}
+[2026-05-18 13:57:15] slim-app.INFO: Slim-Skeleton '/' Encuesta Nl8yMDI2LTA1LTE4IDEyOjI0OjMx [] {"uid":"87cd805"}
+[2026-05-18 14:04:48] slim-app.INFO: Slim-Skeleton '/' Encuesta Nl8yMDI2LTA1LTE4IDEyOjI0OjMx [] {"uid":"ce91c81"}
+[2026-05-18 14:04:48] slim-app.INFO: Slim-Skeleton '/' enlaces [] {"uid":"1ffe27d"}
