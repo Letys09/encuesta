@@ -7,6 +7,7 @@
 	class PreguntaModel {
 		private $db;
 		private $table = 'enc_pregunta';
+		private $tblOp = 'enc_opcion';
 		private $response;
 
 		public function __CONSTRUCT($db) {
@@ -176,6 +177,92 @@
 			} catch(\PDOException $ex) {
 				$this->response->errors = $ex;
 				$this->response->SetResponse(false, "catch: del model $this->table");
+			}
+
+			return $this->response;
+		}
+
+		public function addOpcion($data) {
+			$this->response = new Response(); $fields = array(); $values = array(); 
+
+			try{
+				$this->response->result = $this->db
+					->insertInto($this->tblOp, $data)
+					->execute();
+
+				if($this->response->result!=0) { 
+					$this->response->result = $this->db->getPdo()->query("SELECT MAX(id) AS ID_opcion FROM $this->tblOp")->fetch()->ID_opcion; 
+					$this->response->SetResponse(true, 'id del registro: '.$this->response->result); 
+				} else { $this->response->SetResponse(false, 'no se inserto el registro'); }
+			} catch(\PDOException $ex) {
+				$this->response->errors = $ex;
+				$this->response->SetResponse(false, "catch: add model $this->tblOp");
+			}
+
+			return $this->response;
+		}
+
+		public function getOpciones($ID_pregunta) {
+			$this->response = new Response();
+			$this->response->result = $this->db
+				->from($this->tblOp)
+				->select(null)
+				->select('id, opcion')
+				->where('ID_pregunta', $ID_pregunta)
+				->fetchAll();
+
+			if($this->response->result) { $this->response->SetResponse(true,' '); }
+			else { $this->response->SetResponse(false, 'no existe el registro'); }
+
+			return $this->response;
+		}
+
+		public function replaceOpciones($ID_pregunta, $opciones) {
+			$this->response = new Response();
+			$pdo = $this->db->getPdo();
+			$manageTransaction = !$pdo->inTransaction();
+
+			try {
+				if(!is_array($opciones)) {
+					$opciones = [];
+				}
+
+				if($manageTransaction) {
+					$pdo->beginTransaction();
+				}
+
+				$this->db
+					->deleteFrom($this->tblOp)
+					->where('ID_pregunta', $ID_pregunta)
+					->execute();
+
+				foreach($opciones as $opcion) {
+					$texto = trim((string)$opcion);
+					if($texto === '') {
+						continue;
+					}
+
+					$inserted = $this->db
+						->insertInto($this->tblOp, ['ID_pregunta' => $ID_pregunta, 'opcion' => $texto])
+						->execute();
+
+					if($inserted == 0) {
+						throw new \Exception('No se pudo guardar una opcion');
+					}
+				}
+
+				if($manageTransaction) {
+					$pdo->commit();
+				}
+
+				$this->response->SetResponse(true, 'Opciones actualizadas');
+			} catch(\Exception $ex) {
+				if($manageTransaction && $pdo->inTransaction()) {
+					$pdo->rollBack();
+				}
+
+				$this->response->errors = $ex;
+				$this->response->SetResponse(false, 'catch: replace opciones model '.$this->tblOp);
 			}
 
 			return $this->response;

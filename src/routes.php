@@ -103,7 +103,9 @@ $app->get('/enc/{code}', function(Request $request, Response $response, array $a
             }
 
             foreach($url->preguntas as $pregunta) {
-                if($pregunta->tipo == 5) {
+                if($pregunta->tipo == 2 || $pregunta->tipo == 6) {
+                    $pregunta->opciones = $this->model->pregunta->getOpciones($pregunta->ID_pregunta)->result;
+                } else if($pregunta->tipo == 5) {
                     $pregunta->finalistas = $this->model->reporte->getFinalistas($pregunta->ID_pregunta)->result;
                 }
             }
@@ -119,8 +121,7 @@ $app->get('/enc/{code}', function(Request $request, Response $response, array $a
     }
     elseif($url->response && $url->result->status == 2) { $nombreEncuesta = $this->model->encuesta->get($url->result->ID_encuesta)->result->nombre; $url->SetResponse(false, 'La URL no está recibiendo respuestas'); }
     elseif($url->response && $url->result->status ==0) { $nombreEncuesta = $this->model->encuesta->get($url->result->ID_encuesta)->result->nombre; $url->SetResponse(false, 'La URL no está está disponible'); }
-    /* print_r($url);
-    exit(); */
+
     return $this->renderer->render($response, "encuesta.phtml", array('vista'=>$nombreEncuesta, 'url'=>$url));
 });
 

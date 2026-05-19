@@ -31,7 +31,26 @@
 		});
 
 		$this->get('get/{id}', function($request, $response, $arguments) {
-			return $response->withJson($this->model->pregunta->get($arguments['id']));
+			$info = $this->model->pregunta->get($arguments['id']);
+			if($info->response && ($info->result->tipo == 2 || $info->result->tipo == 6)) {
+				$info_opciones = $this->model->pregunta->getOpciones($arguments['id']);
+				$arrOp = [];
+				if($info_opciones->response && is_array($info_opciones->result)) {
+					$arrOp = $info_opciones->result;
+				}
+
+				if($info->result->tipo == 2) {
+					$txtOpciones = [];
+					foreach($arrOp as $opcion) {
+						$txtOpciones[] = $opcion->opcion;
+					}
+					$info->result->opciones = implode(', ', $txtOpciones);
+				} else {
+					$info->result->opciones = $arrOp;
+				}
+			}
+
+			return $response->withJson($info);
 		});
 
 		$this->get('getAll/[{pagina}/{limite}]', function($request, $response, $arguments) {
@@ -66,7 +85,17 @@
 				$status = $pregunta->status == 1;
 				$folio = $pregunta->ID_pregunta;
 				$folio = "P-".(strlen($folio)<3? str_pad($folio, 3, '0', STR_PAD_LEFT): $folio);
-				$opciones = str_replace(',', ', ', $pregunta->opciones);
+				$arrOp = [];
+				if($pregunta->tipo == 2 || $pregunta->tipo == 6) {
+					$info_opciones = $this->model->pregunta->getOpciones($pregunta->ID_pregunta);
+					if($info_opciones->response && is_array($info_opciones->result)) {
+						foreach($info_opciones->result as $opcion) {
+							$arrOp[] = $opcion->opcion;
+						}
+					}
+				}
+
+				$opciones = implode(", ", $arrOp);
 				$data[] = array(
 					"ID_pregunta" => "<small class=\"folio\">$folio</small>",
 					"fecha" => "<small class=\"agregada\">".date('d/m/Y', strtotime($pregunta->fecha))."</small>",
@@ -93,13 +122,15 @@
 			if(!isset($parsedBody['fecha'])) { $parsedBody['fecha'] = date('Y-m-d\TH:i:s'); }
 			if(!isset($parsedBody['status'])) { $parsedBody['status'] = 1; }
 			if(!isset($parsedBody['tipo'])) { $parsedBody['tipo'] = 1; }
-			if(!isset($parsedBody['opciones'])) { $parsedBody['opciones'] = ''; }
+			// if(!isset($parsedBody['opciones'])) { $parsedBody['opciones'] = ''; }
 			if(!isset($parsedBody['escala'])) { $parsedBody['escala'] = ''; }
 			if(!isset($parsedBody['icono'])) { $parsedBody['icono'] = ''; }
+			$info_opciones = isset($parsedBody['opciones']) ? $parsedBody['opciones'] : array();
+			$opciones = is_array($info_opciones) ? $info_opciones : explode(",", $info_opciones);
 			$votacion_info = !isset($parsedBody['votacion']) ? array() : json_decode($parsedBody['votacion'], true);
-			unset($parsedBody['votacion']);
+			unset($parsedBody['votacion'], $parsedBody['opciones']);
 
-			if($parsedBody['tipo'] == 2 && (!isset($parsedBody['opciones']) || strlen($parsedBody['opciones'])==0)) {
+			if($parsedBody['tipo'] == 2 && (!isset($opciones) || count($opciones) == 0)) {
 				return $response->withJson(['success'=>false, 'message'=>'Debe ingresar las opciones para este tipo de pregunta']);
 			}
 
@@ -112,16 +143,14 @@
 			}
 
 			if($parsedBody['tipo'] == 2){
-				$opciones = explode(",", $parsedBody['opciones']);
+				// $opciones = explode(",", $opciones);
 				foreach($opciones as &$opcion) {
 					$opcion = trim($opcion);
 					$opcion = mb_strtoupper(mb_substr($opcion, 0, 1), 'UTF-8') . mb_substr($opcion, 1, null, 'UTF-8');
 				}
 				unset($opcion);
 
-				$parsedBody['opciones'] = implode(",", $opciones);
-			} else {
-				$parsedBody['opciones'] = '';
+				// $parsedBody['opciones'] = implode(",", $opciones);
 			}
 
 			if($parsedBody['tipo'] != 3) {
@@ -135,6 +164,18 @@
 			}
 
 			$resultado = $this->model->pregunta->add($parsedBody);
+
+			if($parsedBody['tipo'] == 2 && $resultado->response) {
+				$pregunta_id = $resultado->result;
+				foreach($opciones as $i => $opcion) {
+					$addOp = $this->model->pregunta->addOpcion(['ID_pregunta' => $pregunta_id, 'opcion' => $opcion]);
+				}
+
+				if(!$addOp->response) {
+					$this->model->transaction->regresaTransaccion();
+					return $response->withJson($addOp);
+				}
+			}
 			
 			if($parsedBody['tipo'] == 6 && $resultado->response) {
 				$pregunta_id = $resultado->result;
@@ -147,10 +188,14 @@
 
 				$tipo = $votacion['tipo_votacion'];
 				$votacion_opciones = $votacion['opciones'];
-				$arrTxt = [];
 				if($tipo == 1){
 					foreach($votacion_opciones as $i => $opcion) {
-						$arrTxt[] = $opcion['texto'];
+						$addOp = $this->model->pregunta->addOpcion(['ID_pregunta' => $pregunta_id, 'opcion' => $opcion['texto']]);
+						if(!$addOp->response) {
+							$this->model->transaction->regresaTransaccion();
+							return $response->withJson($addOp);
+						}
+
 						$imgName = $pregunta_id.'_opcion_'.$i.'.jpg';
 						$imgPath = $imgUrl.'/'.$imgName;
 						$parts = explode(',', $opcion['imagen']);
@@ -159,16 +204,20 @@
 					}
 				} else {
 					foreach($votacion_opciones as $i => $opcion) {
-						$arrTxt[] = $opcion['texto'];
+						$addOp = $this->model->pregunta->addOpcion(['ID_pregunta' => $pregunta_id, 'opcion' => $opcion]);
+						if(!$addOp->response) {
+							$this->model->transaction->regresaTransaccion();
+							return $response->withJson($addOp);
+						}
 					}
 				}
 
-				$opciones = implode(",", $arrTxt);
-				$editResult = $this->model->pregunta->edit(['tipo_votacion' => $tipo, 'opciones' => $opciones], $pregunta_id);
+				/* $opciones = implode(",", $arrTxt);*/
+				$editResult = $this->model->pregunta->edit(['tipo_votacion' => $tipo], $pregunta_id);
 				if(!$editResult->response) {
 					$this->model->transaction->regresaTransaccion();
 					return $response->withJson($editResult);
-				}
+				} 
 			}
 
 			return $response->withJson($resultado);
@@ -179,6 +228,7 @@
 			$votacion_info = !isset($parsedBody['votacion']) ? array() : json_decode($parsedBody['votacion'], true);
 			unset($parsedBody['votacion']);
 			$pregunta_id = (int)$arguments['id'];
+			$nuevasOpciones = null;
 
 			if(isset($parsedBody['tipo'])) {
 				if($parsedBody['tipo'] != 3) {
@@ -187,14 +237,23 @@
 				}
 
 				if($parsedBody['tipo'] == 2) {
-					$opciones = explode(",", $parsedBody['opciones']);
+					$rawOpciones = isset($parsedBody['opciones']) ? $parsedBody['opciones'] : '';
+					$opciones = explode(",", $rawOpciones);
 					foreach($opciones as &$opcion) {
 						$opcion = trim($opcion);
 						$opcion = mb_strtoupper(mb_substr($opcion, 0, 1), 'UTF-8') . mb_substr($opcion, 1, null, 'UTF-8');
 					}
 					unset($opcion);
+					$opciones = array_values(array_filter($opciones, function($op) {
+						return strlen(trim($op)) > 0;
+					}));
+
+					if(count($opciones) == 0) {
+						return $response->withJson(['response' => false, 'message' => 'Debe ingresar las opciones para este tipo de pregunta']);
+					}
 
 					$parsedBody['opciones'] = implode(",", $opciones);
+					$nuevasOpciones = $opciones;
 				} else if($parsedBody['tipo'] == 6) {
 					$votacion = is_array($votacion_info) ? $votacion_info : array();
 					if(!isset($votacion['opciones']) || count($votacion['opciones']) < 2) {
@@ -262,12 +321,25 @@
 
 					$parsedBody['tipo_votacion'] = $tipo_votacion;
 					$parsedBody['opciones'] = implode(',', $arrTxt);
+					$nuevasOpciones = $arrTxt;
 				} else {
 					$parsedBody['opciones'] = '';
 				}
 			}
 
-			return $response->withJson($this->model->pregunta->edit($parsedBody, $arguments['id']));
+			$editResult = $this->model->pregunta->edit($parsedBody, $arguments['id']);
+			if(!$editResult->response) {
+				return $response->withJson($editResult);
+			}
+
+			if(is_array($nuevasOpciones)) {
+				$replaceResult = $this->model->pregunta->replaceOpciones($pregunta_id, $nuevasOpciones);
+				if(!$replaceResult->response) {
+					return $response->withJson($replaceResult);
+				}
+			}
+
+			return $response->withJson($editResult);
 		});
 
 		$this->post('del/{id}', function($request, $response, $arguments) {

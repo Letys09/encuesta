@@ -366,18 +366,6 @@
 				`;
 			}
 
-			function parseVotingOptions(csv) {
-				if(!csv) {
-					return [];
-				}
-
-				return csv.split(',').map(function(option) {
-					return $.trim(option);
-				}).filter(function(option) {
-					return option.length > 0;
-				});
-			}
-
 			function resetVotacionInputs() {
 				$('.contenedor-img').html(getImageOptionTemplate(1, '', '') + getImageOptionTemplate(2, '', ''));
 				$('.contenedor-texto').html(getTextOptionTemplate(1, '') + getTextOptionTemplate(2, ''));
@@ -385,7 +373,7 @@
 			}
 
 			function populateVotacionEditData(pregunta) {
-				var options = parseVotingOptions(pregunta.opciones);
+				var options = pregunta.opciones;
 				if(options.length < 2) {
 					options = ['', ''];
 				}
@@ -393,16 +381,16 @@
 				var tipoVotacion = parseInt(pregunta.tipo_votacion || 1);
 				if(tipoVotacion === 1) {
 					var imageRows = '';
-					$.each(options, function(i, text) {
+					$.each(options, function(i, option) {
 						var imageUrl = $rootUrl + '/data/votacion/' + pregunta.ID_pregunta + '_opcion_' + i + '.jpg?t=' + new Date().getTime();
-						imageRows += getImageOptionTemplate(i + 1, text, imageUrl);
+						imageRows += getImageOptionTemplate(i + 1, option.opcion, imageUrl);
 					});
 					$('.contenedor-img').html(imageRows);
 					activateVotacionTab('#data-img');
 				} else {
 					var textRows = '';
-					$.each(options, function(i, text) {
-						textRows += getTextOptionTemplate(i + 1, text);
+					$.each(options, function(i, option) {
+						textRows += getTextOptionTemplate(i + 1, option.opcion);
 					});
 					$('.contenedor-texto').html(textRows);
 					activateVotacionTab('#data-texto');

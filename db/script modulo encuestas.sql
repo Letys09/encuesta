@@ -105,3 +105,13 @@ CREATE TABLE enc_votacion_postulacion (
 );
 
 ALTER TABLE `enc_pregunta` ADD `tipo_votacion` TINYINT(1) NULL AFTER `tipo`;
+
+-- 18052026
+-- Tabla para almacenar las opciones de pregunta tipo 2 (opción múltiple) y tipo 6 (votación)
+CREATE TABLE enc_opcion (
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	ID_pregunta INT NOT NULL,
+	opcion VARCHAR(255) NOT NULL,
+	fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT fk_opcion_pregunta FOREIGN KEY (ID_pregunta) REFERENCES enc_pregunta(ID_pregunta)
+);
