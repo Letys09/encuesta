@@ -178,13 +178,21 @@
 				background: #18873c;
 				outline: none;
 			}
+
+			.img-sup {
+				display: flex;
+				justify-content: start;
+				width: 100%;
+				padding-left: 7px;
+				margin-top: 7px;
+			}
 		</style>
 	</head>
 	<body class="style_2">
 		<?php if($url->response): ?>
 		<div id="pre-survey-overlay">
 			<div class="ps-card">
-			    <center><img src="<?= URL_IMG ?>/assets/images/img.png" max-width="310" width="310" height="120" alt=""></center>
+			    <center><img src="<?= URL_IMG ?>/assets/images/logo_kapital_2.png" max-width="310" width="310" height="120" alt="Logo Kapital"></center>
 				<h1 class="ps-title mt-4">Bienvenido</h1>
 				<p class="ps-subtitle">Ingresa tu número de invitado para continuar con la encuesta.</p>
 				<label class="ps-label" for="visitor-number">Número de invitado</label>
@@ -209,6 +217,9 @@
 			</div>
 		</header>
 		<div class="wrapper_centering">
+			<div class="img-sup">
+		        <img src="<?= URL_IMG ?>/assets/images/logo_kapital_2.png" max-width="80" width="80" height="28" alt="Logo Kapital">
+		    </div>
 			<div class="container_centering">
 				<div class="container">
 					<?php if($url->response): ?>
