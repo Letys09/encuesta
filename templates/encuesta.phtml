@@ -382,8 +382,7 @@
 																			$pregunta_id = $pregunta->ID_pregunta;
 																			$opciones = $pregunta->opciones;
 																			$imgs = $pregunta->tipo_votacion;
-																			$style = $imgs == 2 ? 'style="max-height: 300px; margin: 0 auto;"' : '';
-																			$styleArrow = $imgs == 2 ? 'style="top: 30%"' : '';
+																			$style = $imgs == 2 ? 'style="max-height: 400px; margin: 0 auto;"' : '';
 																			foreach($opciones as $i => $opcion) :
 																				$active = $i === 0 ? 'active' : '';
 																				$imageName = '';
@@ -424,10 +423,10 @@
 																				</div>
 																			<?php endforeach; ?>
 																		<!-- Flechas -->
-																		<span class="arrow left" data-dir="prev" role="button" tabindex="0" aria-label="Anterior" <?= $styleArrow ?>>
+																		<span class="arrow left" data-dir="prev" role="button" tabindex="0" aria-label="Anterior">
 																			&#10094;
 																		</span>
-																		<span class="arrow right" data-dir="next" role="button" tabindex="0" aria-label="Siguiente" <?= $styleArrow ?>>
+																		<span class="arrow right" data-dir="next" role="button" tabindex="0" aria-label="Siguiente">
 																			&#10095;
 																		</span>
 																	</div>
