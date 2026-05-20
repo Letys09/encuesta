@@ -119,6 +119,19 @@
 			return $this->response->SetResponse(true);
 		}
 
+		public function getDisp(){
+			$this->response = new Response();
+			$this->response->result = $this->db
+				->from($this->table)
+				->select(null)
+				->select("ID_url, fecha")
+				->where("ID_encuesta = 0")
+				->where("status = 2")
+				->fetch();
+			if($this->response->result) return $this->response->SetResponse(true,' '); 
+			else return $this->response->SetResponse(false, 'no hay registro disponible'); 
+		}
+
 		public function add($data) {
 			$this->response = new Response(); $fields = array(); $values = array(); 
 			foreach($data as $field => $value) { $fields[] = $field; $values[] = "'".utf8_encode($value)."'"; }

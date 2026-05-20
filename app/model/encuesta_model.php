@@ -188,6 +188,7 @@
 			return $this->response;
 		}
 
+		// Enviar WhatsApp con intermediario Ultramsg
 		public function send($telefono, $body){
 			$token='x55eza6hgbmsy9nm';
     		$instance="https://api.ultramsg.com/instance85888/messages/chat";
@@ -226,6 +227,50 @@
 				return $response;
 			}
 
+		}
+
+		//	Enviar whatsapp desde Meta Api
+		function sendWhatsAppMessage($to, $name) {
+			$url = 'https://graph.facebook.com/' . API_VERSION . '/' . PHONE_NUMBER_ID . '/messages';
+			
+			$numeroLimpio = preg_replace('/[^0-9]/', '', $to);
+			if (strlen($numeroLimpio) === 10) {
+				$numeroLimpio = '+52' . $numeroLimpio;
+			} elseif (substr($numeroLimpio, 0, 2) === '52') {
+				$numeroLimpio = '+' . $numeroLimpio;
+			}
+
+			$data = [
+				"messaging_product" => "whatsapp",
+				"to" => $numeroLimpio,
+				"type" => "template",
+				"template" => [
+					"name" => $name, // nombre de la plantilla creada en Meta Business
+					"language" => ["code" => "es_MX"],
+					"components" => []
+				]
+			];
+
+			$ch = curl_init($url);
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, [
+				'Authorization: Bearer ' . WHATSAPP_TOKEN,
+				'Content-Type: application/json'
+			]);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+			curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+			$response = curl_exec($ch);
+			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			curl_close($ch);
+			if ($httpCode === 200) {
+				$result = json_decode($response, true);
+				return ['success' => true, 'message_id' => $result['messages'][0]['id']];
+			} else {
+				$errorDetail = json_decode($response, true);
+				$errorMsg = $errorDetail['error']['message'] ?? 'Error desconocido';
+				return ['success' => false, 'error' => $errorMsg];
+			}
 		}
 	}
 ?>

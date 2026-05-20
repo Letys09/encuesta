@@ -117,6 +117,7 @@
 			set_time_limit(0);
 			$info = $request->getParsedBody();
 			$url = $info['url'];
+			$url_id = $info['url_id'];
 			$telefonos = isset($info['telefonos']) ? $info['telefonos'] : '';
 
 			if($telefonos === '') {
@@ -150,18 +151,25 @@
 				]);
 			}
 
-			$body = "¡Hola! Te invitamos a participar en esta encuesta. 
-Participar aquí:
-$url
-";
+			// Envío de WhatsApp con intermediario Ultramsg
+			/* $body = "¡Hola! Te invitamos a participar en esta encuesta. 
+						Participar aquí:
+						$url
+					"; */
 
 			$total = count($numerosValidos);
 			$enviados = 0;
 			$fallidos = [];
 
 			foreach($numerosValidos as $telefono) {
-				$resultado = json_decode($this->model->encuesta->send($telefono, $body));
-				if(isset($resultado->sent) && $resultado->sent === 'true') {
+				// Envío de WhatsApp con intermediario Ultramsg
+				// $resultado = json_decode($this->model->encuesta->send($telefono, $body));
+
+				// Envío de WhatsApp con Meta API
+				$resultado = $this->model->encuesta->sendWhatsAppMessage($telefono, 'encuesta'.$url_id);
+				error_log('Envío mensaje META API: '.json_encode($resultado)." Teléfono: $telefono URL: $url ID URL: $url_id");
+				
+				if(isset($resultado) && $resultado['success']) {
 					$enviados++;
 				} else {
 					$fallidos[] = $telefono;

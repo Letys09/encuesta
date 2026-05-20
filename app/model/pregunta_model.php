@@ -137,6 +137,9 @@
 		public function edit($data, $ID_pregunta) {
 			$this->response = new Response();
 			$this->response->result = true;
+			if(isset($data['opciones'])) {
+				unset($data['opciones']);
+			}
 			try{
 				$orgInfo = $this->get($ID_pregunta)->result; $areTheSame = true;
 				foreach($orgInfo as $field => $value) { if(isset($data[$field]) && $data[$field] != $value) { $areTheSame = false; break; } }

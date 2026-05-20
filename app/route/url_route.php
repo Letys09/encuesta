@@ -95,14 +95,30 @@
 			if(!isset($parsedBody['fecha'])) { $parsedBody['fecha'] = date('Y-m-d\TH:i:s'); }
 			if(!isset($parsedBody['status'])) { $parsedBody['status'] = 1; }
 
-			$url = $this->model->url->add($parsedBody);
-			$data = $this->model->url->get($url->result)->result;
-			$data->encuesta = $this->model->encuesta->get($data->ID_encuesta)->result;
-			$data->url = base64_encode((binary)$data->ID_url."_".(binary)$data->fecha);
-			$urltxt = "https://trasladosuniversales.com.mx/app/encuestas/public/enc/'".$data->url;
-			$data->intentos = [];
-			$url->data = $data;
-			$guardourl = $this->model->url->updateURL($data->ID_url, $urltxt);
+			$info_disp = $this->model->url->getDisp();
+			if($info_disp->response){
+				$disponible = $info_disp->result;
+				$url_id = $disponible->ID_url;
+				$fecha = $disponible->fecha;
+				$txt = base64_encode($url_id."_".$fecha);
+
+				$dataEdit = [
+					'ID_encuesta' => $parsedBody['ID_encuesta'],
+					'num_preguntas' => $parsedBody['num_preguntas']
+				];
+
+				$guardourl = $this->model->url->edit($dataEdit, $url_id);
+
+			} else {
+				$url = $this->model->url->add($parsedBody);
+				$data = $this->model->url->get($url->result)->result;
+				$data->encuesta = $this->model->encuesta->get($data->ID_encuesta)->result;
+				$data->url = base64_encode($data->ID_url."_".$data->fecha);
+				$urltxt = URL_ROOT."/enc/'".$data->url;
+				$data->intentos = [];
+				$url->data = $data;
+				$guardourl = $this->model->url->updateURL($data->ID_url, $urltxt);
+			}
 
 			return $response->withJson($guardourl);
 			//return $response->withJson($url);

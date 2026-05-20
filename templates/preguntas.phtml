@@ -454,16 +454,31 @@
 				$('#input-opcion-img').data('target', $(this)).click();
 			});
 
-			$('body').on('change', '#input-opcion-img', function() {
-				var file = this.files[0];
-				var target = $(this).data('target');
-				if(file && target) {
-					var reader = new FileReader();
-					reader.onload = function(e) {
-						target.find('img').remove();
-						target.append('<img src="'+e.target.result+'" alt="Opción" class="img-fluid" style="max-width: 100%;">');
-					}
-					reader.readAsDataURL(file);
+			$('body').on('change', '#input-opcion-img', async function() {
+				var input = this;
+				var file = input.files[0];
+				var target = $(input).data('target');
+
+				if(!file || !target) {
+					input.value = '';
+					return;
+				}
+
+				blockPage();
+				try {
+					var compressedDataUrl = await compressImageFile(file);
+					target.find('img').remove();
+					target.append('<img src="'+compressedDataUrl+'" alt="Opción" class="img-fluid" style="max-width: 100%;">');
+				} catch (error) {
+					swal({
+						type: 'warning',
+						title: 'Oops!',
+						text: error && error.message ? error.message : 'No fue posible procesar la imagen',
+						timer: 5000
+					});
+				} finally {
+					input.value = '';
+					$.unblockUI();
 				}
 			});
 
@@ -757,6 +772,97 @@
 				} else {
 					$('#pregunta-pregunta').removeClass('bg-light');
 				}
+			}
+
+			var MAX_IMAGE_DIMENSION = 1600;
+			var MAX_IMAGE_BYTES = 900 * 1024;
+			var MAX_IMAGE_QUALITY = 0.86;
+			var MIN_IMAGE_QUALITY = 0.45;
+
+			function estimateDataUrlBytes(dataUrl) {
+				if(!dataUrl || dataUrl.indexOf(',') === -1) {
+					return 0;
+				}
+
+				var base64Part = dataUrl.split(',')[1] || '';
+				var padding = (base64Part.match(/=*$/) || [''])[0].length;
+				return Math.floor((base64Part.length * 3) / 4) - padding;
+			}
+
+			function readFileAsDataURL(file) {
+				return new Promise(function(resolve, reject) {
+					var reader = new FileReader();
+					reader.onload = function(e) {
+						resolve(e.target.result);
+					};
+					reader.onerror = function() {
+						reject(new Error('No se pudo leer la imagen'));
+					};
+					reader.readAsDataURL(file);
+				});
+			}
+
+			function loadImageFromDataUrl(dataUrl) {
+				return new Promise(function(resolve, reject) {
+					var img = new Image();
+					img.onload = function() {
+						resolve(img);
+					};
+					img.onerror = function() {
+						reject(new Error('Formato de imagen no compatible'));
+					};
+					img.src = dataUrl;
+				});
+			}
+
+			async function compressImageFile(file) {
+				if(!file || !/^image\//i.test(file.type)) {
+					throw new Error('El archivo seleccionado no es una imagen válida');
+				}
+
+				var originalDataUrl = await readFileAsDataURL(file);
+				var img = await loadImageFromDataUrl(originalDataUrl);
+
+				var scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(img.naturalWidth, img.naturalHeight));
+				var width = Math.max(1, Math.round(img.naturalWidth * scale));
+				var height = Math.max(1, Math.round(img.naturalHeight * scale));
+				var quality = MAX_IMAGE_QUALITY;
+
+				var canvas = document.createElement('canvas');
+				var ctx = canvas.getContext('2d');
+				if(!ctx) {
+					throw new Error('Tu navegador no soporta compresión de imagen en este formulario');
+				}
+
+				function renderCompressed(currentWidth, currentHeight, currentQuality) {
+					canvas.width = currentWidth;
+					canvas.height = currentHeight;
+					ctx.fillStyle = '#ffffff';
+					ctx.fillRect(0, 0, currentWidth, currentHeight);
+					ctx.drawImage(img, 0, 0, currentWidth, currentHeight);
+					return canvas.toDataURL('image/jpeg', currentQuality);
+				}
+
+				var compressedDataUrl = renderCompressed(width, height, quality);
+				var tries = 0;
+
+				while(estimateDataUrlBytes(compressedDataUrl) > MAX_IMAGE_BYTES && tries < 8) {
+					if(quality > MIN_IMAGE_QUALITY) {
+						quality = Math.max(MIN_IMAGE_QUALITY, quality - 0.08);
+					} else {
+						width = Math.max(800, Math.round(width * 0.85));
+						height = Math.max(800, Math.round(height * 0.85));
+					}
+
+					compressedDataUrl = renderCompressed(width, height, quality);
+					tries++;
+				}
+
+				if(estimateDataUrlBytes(compressedDataUrl) > (2 * 1024 * 1024)) {
+					throw new Error('La imagen sigue siendo demasiado pesada. Usa una imagen más liviana o de menor resolución');
+				}
+
+				return compressedDataUrl;
 			}
 
 			$('#puntuacion-select').on('change', function() {

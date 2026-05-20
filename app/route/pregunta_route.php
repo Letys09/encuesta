@@ -179,8 +179,8 @@
 			
 			if($parsedBody['tipo'] == 6 && $resultado->response) {
 				$pregunta_id = $resultado->result;
-				// $imgUrl = '../../public/data/votacion';
-				$imgUrl = 'data/votacion';
+				$imgUrl = '../../public/data/votacion';
+				// $imgUrl = 'data/votacion';
 				if(!is_dir($imgUrl) && !mkdir($imgUrl, 0777, true)) {
 					$this->model->transaction->regresaTransaccion();
 					return $response->withJson($response->SetResponse(false, 'No se pudo crear el directorio para guardar imágenes de votación'));
@@ -198,9 +198,22 @@
 
 						$imgName = $pregunta_id.'_opcion_'.$i.'.jpg';
 						$imgPath = $imgUrl.'/'.$imgName;
-						$parts = explode(',', $opcion['imagen']);
+						if(!isset($opcion['imagen']) || strpos($opcion['imagen'], 'data:image') !== 0) {
+							$this->model->transaction->regresaTransaccion();
+							return $response->withJson($response->SetResponse(false, 'Formato de imagen inválido para una opción de votación'));
+						}
+
+						$parts = explode(',', $opcion['imagen'], 2);
+						if(count($parts) < 2) {
+							$this->model->transaction->regresaTransaccion();
+							return $response->withJson($response->SetResponse(false, 'No se pudo leer una imagen de votación'));
+						}
+
 						$image_binary = base64_decode($parts[1]);
-						file_put_contents($imgPath, $image_binary);
+						if($image_binary === false || file_put_contents($imgPath, $image_binary) === false) {
+							$this->model->transaction->regresaTransaccion();
+							return $response->withJson($response->SetResponse(false, 'No se pudo guardar una imagen de votación'));
+						}
 					}
 				} else {
 					foreach($votacion_opciones as $i => $opcion) {
@@ -263,7 +276,7 @@
 					$tipo_votacion = isset($votacion['tipo_votacion']) ? (int)$votacion['tipo_votacion'] : 1;
 					$votacion_opciones = $votacion['opciones'];
 					$arrTxt = [];
-					$imgUrl = 'data/votacion';
+					$imgUrl = '../../public/data/votacion';
 					$existingImageFiles = glob($imgUrl.'/'.$pregunta_id.'_opcion_*.jpg');
 					if(!is_array($existingImageFiles)) {
 						$existingImageFiles = [];
@@ -299,6 +312,8 @@
 								if($image_binary === false || file_put_contents($imgPath, $image_binary) === false) {
 									return $response->withJson(['response' => false, 'message' => 'No se pudo guardar una imagen de votación']);
 								}
+							} else if(!file_exists($imgPath)) {
+								return $response->withJson(['response' => false, 'message' => 'Formato de imagen inválido']);
 							}
 						}
 					}
@@ -320,11 +335,12 @@
 					}
 
 					$parsedBody['tipo_votacion'] = $tipo_votacion;
-					$parsedBody['opciones'] = implode(',', $arrTxt);
 					$nuevasOpciones = $arrTxt;
-				} else {
-					$parsedBody['opciones'] = '';
 				}
+			}
+
+			if(isset($parsedBody['opciones'])) {
+				unset($parsedBody['opciones']);
 			}
 
 			$editResult = $this->model->pregunta->edit($parsedBody, $arguments['id']);

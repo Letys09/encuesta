@@ -279,7 +279,8 @@
 			e.preventDefault();
 			tr = $(this).parents('tr');
 			trInfo = getTrElement('tbl-urls', tr);
-			dataWhatsApp = { url: $(this).attr('data-url') };
+			let id = tr.attr('data-id');
+			dataWhatsApp = { url: $(this).attr('data-url'), url_id: id };
 
 			$('#wa-telefonos').val('');
 			$('#wa-count').text('0');
@@ -315,7 +316,7 @@
 			blockPage();
 			$('#btnSendWhatsApp').prop('disabled', true);
 
-			$.post(`${$apiUrl}encuesta/send/`, { url: dataWhatsApp.url, telefonos: telefonos }, function(resp) {
+			$.post(`${$apiUrl}encuesta/send/`, { url: dataWhatsApp.url, url_id: dataWhatsApp.url_id, telefonos: telefonos }, function(resp) {
 				$('#btnSendWhatsApp').prop('disabled', false);
 				$.unblockUI();
 
